@@ -16,7 +16,7 @@
 title: Blog de Xavier Delamotte
 author: Xavier Delamotte
 description: Personnal Github Page
-baseurl: "" # the subpath of your site, e.g. /blog
+baseurl: /blog # the subpath of your site, e.g. /blog
 url: "https://xade.eu/blog" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  x4d3
 # Build settings
