@@ -17,7 +17,7 @@ title: My Blog
 author: Xavier Delamotte
 description: Random stuff I want to share
 baseurl: /blog # the subpath of your site, e.g. /blog
-url: "https://xade.eu/blog" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://xade.eu" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  x4d3
 # Build settings
 markdown: kramdown
