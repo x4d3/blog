@@ -23,6 +23,7 @@ github_username:  x4d3
 markdown: kramdown
 plugins:
   - jekyll-feed
+  - jekyll-postfiles
 search: true
 
 permalink: /:title
