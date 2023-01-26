@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+require 'time'
+require 'fileutils'
+require 'erb'
+TEMPLATE = <<~EOS
+  ---
+  layout: post
+  title: <%= title %>
+  ---
+EOS
+
+def slugify(s)
+   s.downcase.strip.gsub(' ', '-').gsub(/[^\w-]/, '')
+end
+
+
+ERBContext = Struct.new(:title, keyword_init: true) do
+  def access_binding
+    binding
+  end
+end
+FOLDER = "_posts"
+
+def create_post(title)
+  date = Date.today
+
+  context = ERBContext.new(title: title)
+  result = ERB.new(TEMPLATE).result(context.access_binding)
+
+  filename = "#{date.strftime('%Y-%m-%d')}--#{slugify(title)}.md"
+  filepath = File.join(FOLDER, filename)
+
+  if File.exist?(filepath)
+    warn "File #{filepath} already exists"
+  else
+    File.write(filepath, result)
+    puts "File created: #{filepath}"
+  end
+end
+
+
+raise "provide the title as argument" if ARGV.empty?
+
+create_post(ARGV.join(' '))
