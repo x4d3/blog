@@ -10,6 +10,10 @@ It's using a template using [Simple.css](https://simplecss.org/) to make it as s
 
 ## Github action
 
+{% highlight javascript %}
+document.write("JavaScript is a simple language for javatpoint learners");
+{% endhighlight %}
+
 ### `.github/workflows/deploy.yml`
 
 ```yaml

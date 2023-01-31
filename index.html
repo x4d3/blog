@@ -1,0 +1,34 @@
+---
+layout: default
+---
+
+{% if site.paginate %}
+{% assign posts = paginator.posts %}
+{% else %}
+{% assign posts = site.posts %}
+{% endif %}
+
+{%- if posts.size > 0 -%}
+<ul>
+    {%- for post in posts -%}
+    <li>
+        <time datetime="{{post.date}}">{{ post.date | date_to_long_string }}</time>
+        <a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+        {%- if site.show_excerpts -%}
+        {{ post.excerpt }}
+        {%- endif -%}
+    </li>
+    {%- endfor -%}
+</ul>
+
+{% if site.paginate %}
+    {%- if paginator.previous_page %}
+    <a href="{{ paginator.previous_page_path | relative_url }}"><button>Previous</button></a>
+    {%- endif %}
+
+    {%- if paginator.next_page %}
+    <a href="{{ paginator.next_page_path | relative_url }}"><button>Next</button></a>
+    {%- endif %}
+{%- endif %}
+
+{%- endif -%}

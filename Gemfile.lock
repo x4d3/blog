@@ -39,6 +39,7 @@ GEM
       jekyll (>= 3.7, < 5.0)
     jekyll-optional-front-matter (0.3.2)
       jekyll (>= 3.0, < 5.0)
+    jekyll-paginate (1.1.0)
     jekyll-postfiles (3.1.0)
       jekyll (>= 3.8.6, < 5)
     jekyll-sass-converter (1.5.2)
@@ -81,6 +82,7 @@ DEPENDENCIES
   jekyll-commonmark-ghpages
   jekyll-feed
   jekyll-optional-front-matter
+  jekyll-paginate (~> 1.1)
   jekyll-postfiles
   jekyll-seo-tag (~> 2.8)
   kramdown-parser-gfm (~> 1.1)

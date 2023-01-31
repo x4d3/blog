@@ -8,6 +8,7 @@ github_username:  x4d3
 plugins:
   - jekyll-feed
   - jekyll-postfiles
+  - jekyll-paginate
 search: true
 
 markdown: CommonMarkGhPages
@@ -15,7 +16,12 @@ commonmark:
   options: ["UNSAFE", "SMART", "FOOTNOTES"]
   extensions: ["strikethrough", "autolink", "table"]
 
+highlighter: rouge
+
 permalink: /:title
+show_excerpts: false
+
+paginate: 20
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
