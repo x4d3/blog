@@ -6,7 +6,6 @@ gem 'jekyll'
 
 group :jekyll_plugins do
   gem "jekyll-feed"
-#   gem "github-pages"
   gem 'jekyll-postfiles'
     gem 'jekyll-optional-front-matter'
     gem 'jekyll-commonmark-ghpages'
