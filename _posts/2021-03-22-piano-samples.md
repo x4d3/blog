@@ -2,8 +2,7 @@
 layout: post
 title: Piano Samples
 subtitle: Piano samples found in modern music
-categories:
-- Music
+category: Music
 ---
 
 ## Blonde Redhead - For the Damaged Coda

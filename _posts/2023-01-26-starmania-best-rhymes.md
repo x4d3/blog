@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Starmania - The best rhymes
+category: Music
 ---
 
 [La complainte de la serveuse automate](https://genius.com/Starmania-la-complainte-de-la-serveuse-automate-lyrics)

@@ -7,6 +7,7 @@ TEMPLATE = <<~EOS
   ---
   layout: post
   title: <%= title %>
+  category: music
   ---
 EOS
 
@@ -28,7 +29,7 @@ def create_post(title)
   context = ERBContext.new(title: title)
   result = ERB.new(TEMPLATE).result(context.access_binding)
 
-  filename = "#{date.strftime('%Y-%m-%d')}--#{slugify(title)}.md"
+  filename = "#{date.strftime('%Y-%m-%d')}-#{slugify(title)}.md"
   filepath = File.join(FOLDER, filename)
 
   if File.exist?(filepath)
