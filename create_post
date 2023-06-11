@@ -28,9 +28,11 @@ def create_post(title)
 
   context = ERBContext.new(title: title)
   result = ERB.new(TEMPLATE).result(context.access_binding)
+  formatted_date = date.strftime('%Y-%m-%d')
+  filename = "#{formatted_date}-#{slugify(title)}.md"
+  filepath = File.join(FOLDER, formatted_date, filename)
 
-  filename = "#{date.strftime('%Y-%m-%d')}-#{slugify(title)}.md"
-  filepath = File.join(FOLDER, filename)
+  FileUtils.mkdir_p File.dirname(filepath)
 
   if File.exist?(filepath)
     warn "File #{filepath} already exists"
