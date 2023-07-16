@@ -1,3 +1,9 @@
+---
+layout: post
+title: Engineering Blogs
+category: Dev
+---
+
 - [Engineering at Meta](https://engineering.fb.com/)
 - [Google Research](https://ai.googleblog.com/)
 - [Google Cloud Blog](https://cloud.google.com/blog/)
