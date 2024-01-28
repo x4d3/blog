@@ -9,6 +9,7 @@ plugins:
   - jekyll-feed
   - jekyll-postfiles
   - jekyll-paginate
+  - jekyll-archives
 search: true
 
 markdown: CommonMarkGhPages
@@ -22,6 +23,14 @@ permalink: /:title
 show_excerpts: false
 
 paginate: 20
+
+jekyll-archives:
+  enabled:
+    - categories
+  layouts:
+    category: categories
+  permalinks:
+    category: '/:name/'
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list

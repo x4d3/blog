@@ -7,9 +7,10 @@ gem 'jekyll'
 group :jekyll_plugins do
   gem "jekyll-feed"
   gem 'jekyll-postfiles'
-    gem 'jekyll-optional-front-matter'
-    gem 'jekyll-commonmark-ghpages'
-    gem "jekyll-seo-tag", "~> 2.8"
+  gem 'jekyll-optional-front-matter'
+  gem 'jekyll-commonmark-ghpages'
+  gem "jekyll-seo-tag", "~> 2.8"
+  gem "jekyll-archives"
 end
 
 gem "webrick", "~> 1.7"

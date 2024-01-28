@@ -8,12 +8,16 @@
     <link rel="stylesheet" href="{{ "/assets/css/syntax.css" | relative_url }}">
     <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
     <script src="{{"/assets/js/mermaid.min.js" | relative_url }}">
-
     {% seo %}
 </head>
 <body>
     <header>
-        <h1><a href="{{ "/" | absolute_url }}">{{ site.title }}</a></h1>
+        <nav>
+            <a href="{{ "/" | relative_url }}">All</a>
+            {%- for category in site.categories -%}
+                <a href="{{ category | first | slugify | relative_url}}">{{ category | first }}</a>
+            {% endfor -%}
+        </nav>
     </header>
     <main>{{ content }}</main>
     <footer>
