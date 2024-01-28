@@ -1,3 +1,7 @@
+:root {
+    --accent: rgb(47, 129, 247);
+}
+
 .videoWrapper {
     position: relative;
     padding-bottom: 56.25%;
