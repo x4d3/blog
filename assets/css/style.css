@@ -1,5 +1,6 @@
 :root {
     --accent: rgb(47, 129, 247);
+    --accent-hover: rgb(73, 151, 255);
 }
 
 .videoWrapper {

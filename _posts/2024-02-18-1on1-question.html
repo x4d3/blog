@@ -1,0 +1,547 @@
+---
+layout: post
+title: "1:1 Question"
+category: Dev
+---
+<h2 id="title"></h2>
+<p id="source"></p>
+<button onclick="pickQuestion()">Get another question</button>
+<script>
+    const QUESTIONS = [
+        {
+            "title": "What are you most proud of recently at work, and why? Tell me something you feel good about."
+        },
+        {
+            "title": "How can I improve on the support this organization is giving to you?"
+        },
+        {
+            "title": "What are some of your favorite things that your past managers have done?"
+        },
+        {
+            "title": "What's something I don't yet realize about this organization?"
+        },
+        {
+            "title": "How does our current structure lead to challenges?"
+        },
+        {
+            "title": "What's something you hope I will change?"
+        },
+        {
+            "title": "What's the most impactful thing I can do for your career advancement right now?"
+        },
+        {
+            "title": "What's a key skill you're looking to improve in the next 3-6 months?"
+        },
+        {
+            "title": "What's something you hope I won't change?"
+        },
+        {
+            "title": "How do you prefer to receive feedback (both positive and negative)?"
+        },
+        {
+            "title": "How can I best encourage you to give me feedback?"
+        },
+        {
+            "title": "What can I help you with between now and the next time we meet?"
+        },
+        {
+            "title": "What are some lessons you and/or the organization learned prior to my joining?"
+        },
+        {
+            "title": "Where are we most at risk of firefighting?"
+        },
+        {
+            "title": "What does 100% effort look like? How can we keep it closer to 85%?",
+            "source": "https://hbr.org/2023/06/to-build-a-top-performing-team-ask-for-85-effort"
+        },
+        {
+            "title": "What is the most unnecessarily difficult part of your job these days?"
+        },
+        {
+            "title": "How can I best enable you to succeed?"
+        },
+        {
+            "title": "What changes would you like to see in how things are delegated?"
+        },
+        {
+            "title": "What are the top 1-3 areas you'd like to improve in?"
+        },
+        {
+            "title": "What are the top areas you can help me improve in?"
+        },
+        {
+            "title": "How did we get to this point with x project / x situation?"
+        },
+        {
+            "title": "How is everything going today? Tell me about this last week?"
+        },
+        {
+            "title": "What's on your mind this week?"
+        },
+        {
+            "title": "What's something (or a few things) you learned recently?"
+        },
+        {
+            "title": "Anything you think I should know?"
+        },
+        {
+            "title": "Anything you'd like to discuss?"
+        },
+        {
+            "title": "How is everything going with the people on your team?"
+        },
+        {
+            "title": "Is there someone at the company (or elsewhere) that you'd like to learn from?"
+        },
+        {
+            "title": "What made you decide to work here?"
+        },
+        {
+            "title": "How will I know if something's not quite right for you, e.g. you're annoyed or frustrated?"
+        },
+        {
+            "title": "How do you like to receive appreciation and recognition?"
+        },
+        {
+            "title": "What makes 1:1s the most valuable for you?"
+        },
+        {
+            "title": "What are the 3 top strengths you think the team has?"
+        },
+        {
+            "title": "Do you need more (or less) feedback? From who?"
+        },
+        {
+            "title": "Are you afraid of anything at work?",
+            "source": "https://www.linkedin.com/pulse/9-questions-uncover-most-surprising-insights-from-employees-lew/"
+        },
+        {
+            "title": "Have you seen something recently and thought to yourself \"I wish we'd done that\"?",
+            "source": "https://www.linkedin.com/pulse/9-questions-uncover-most-surprising-insights-from-employees-lew/"
+        },
+        {
+            "title": "Is there something we should measure in the company that we currently don't?",
+            "source": "https://www.linkedin.com/pulse/9-questions-uncover-most-surprising-insights-from-employees-lew/"
+        },
+        {
+            "title": "Is there any part of the company you wish you were able to interact with more?",
+            "source": "https://www.linkedin.com/pulse/9-questions-uncover-most-surprising-insights-from-employees-lew/"
+        },
+        {
+            "title": "Is there an area outside your current role where you feel you could be contributing?",
+            "source": "https://www.linkedin.com/pulse/9-questions-uncover-most-surprising-insights-from-employees-lew/"
+        },
+        {
+            "title": "Is there anyone at the company you wish you could apprentice under for a few weeks?",
+            "source": "https://www.linkedin.com/pulse/9-questions-uncover-most-surprising-insights-from-employees-lew/"
+        },
+        {
+            "title": "Have you seen someone here do great work that's gone unnoticed?",
+            "source": "https://www.linkedin.com/pulse/9-questions-uncover-most-surprising-insights-from-employees-lew/"
+        },
+        {
+            "title": "Are there things you don't know about the company that you feel you should know?",
+            "source": "https://www.linkedin.com/pulse/9-questions-uncover-most-surprising-insights-from-employees-lew/"
+        },
+        {
+            "title": "What makes you grumpy?",
+            "source": "https://larahogan.me/blog/first-one-on-one-questions/"
+        },
+        {
+            "title": "How will I know when you're grumpy?",
+            "source": "https://larahogan.me/blog/first-one-on-one-questions/"
+        },
+        {
+            "title": "How can I help you when you're grumpy?",
+            "source": "https://larahogan.me/blog/first-one-on-one-questions/"
+        },
+        {
+            "title": "What do you need from your peers?",
+            "source": "https://larahogan.me/blog/first-one-on-one-questions/"
+        },
+        {
+            "title": "What's your favorite way to treat yourself?",
+            "source": "https://larahogan.me/blog/first-one-on-one-questions/"
+        },
+        {
+            "title": "What concerns are \"keeping you up at night\"?"
+        },
+        {
+            "title": "Are there any big opportunities that you think we might be missing out on?"
+        },
+        {
+            "title": "What is something that you don't understand as well here as you'd like?"
+        },
+        {
+            "title": "What are some things that keep you from doing your best work right now?"
+        },
+        {
+            "title": "What kinds of things do you wish you had more opportunity to work on?"
+        },
+        {
+            "title": "What feels most important to you about [meeting/project/process/situation]?",
+            "source": "https://larahogan.me/blog/questions-for-biceps-core-needs/"
+        },
+        {
+            "title": "What challenges are you most concerned with (or focused on) right now? In an ideal world, how would we move this forward?",
+            "source": "https://larahogan.me/blog/questions-for-biceps-core-needs/"
+        },
+        {
+            "title": "If you were me, how would you handle [meeting/project/process/situation]?",
+            "source": "https://larahogan.me/blog/questions-for-biceps-core-needs/"
+        },
+        {
+            "title": "What's feeling stuck?",
+            "source": "https://wherewithall.com/resources/20-Great-Open-Questions.pdf"
+        },
+        {
+            "title": "What, if anything, is going unsaid?",
+            "source": "https://wherewithall.com/resources/20-Great-Open-Questions.pdf"
+        },
+        {
+            "title": "What do you find motivating?",
+            "source": "https://wherewithall.com/resources/20-Great-Open-Questions.pdf"
+        },
+        {
+            "title": "What are you optimizing for?",
+            "source": "https://wherewithall.com/resources/20-Great-Open-Questions.pdf"
+        },
+        {
+            "title": "How are you feeling about your workload and current projects?",
+            "source": "https://www.usewaggle.ai/blog/one-to-one-meetings"
+        },
+        {
+            "title": "What do you want to be spending more time on? Less time on?",
+            "source": "https://www.usewaggle.ai/blog/one-to-one-meetings"
+        },
+        {
+            "title": "Is there anything that might be hindering your productivity or motivation?",
+            "source": "https://www.usewaggle.ai/blog/one-to-one-meetings"
+        },
+        {
+            "title": "Is there anything I do that helps and you wish I did more often?",
+            "source": "https://www.usewaggle.ai/blog/one-to-one-meetings"
+        },
+        {
+            "title": "Can you talk me through a typical week for you?"
+        },
+        {
+            "title": "What are you noticing that I might be missing?"
+        },
+        {
+            "title": "What don't you have patience for?"
+        },
+        {
+            "title": "What might I or others misunderstand about you?"
+        },
+        {
+            "title": "How do you like being celebrated?"
+        },
+        {
+            "title": "What role do you think our team needs most?"
+        },
+        {
+            "title": "What information is hard for you to get?"
+        },
+        {
+            "title": "What topic should be discussed at team meetings that we never seem to cover?"
+        },
+        {
+            "title": "What have you learned now but you wish you knew when you joined?"
+        },
+        {
+            "title": "Is your job what you expected when you accepted it? If not, where has it differed?"
+        },
+        {
+            "title": "How do you feel your work/life balance is right now?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "What's your rhythm?",
+            "source": "https://www.entrepreneur.com/science-technology/how-googles-marissa-mayer-prevents-burnout/223723"
+        },
+        {
+            "title": "What's one thing we could change about work for you that would improve your personal life",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "What did you do for fun in the past that you haven't had as much time for lately?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "Do you have any pets? How long have you had them?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "What are your superpowers? What powers would you like to develop?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "What's one thing we could do today to help you with your long term goals?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "What's a recent situation you wish you handled differently? What would you change?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "How many hours a day do you feel you're productive? How could we help you be more productive?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "What is the #1 Problem for our team/company? Why?"
+        },
+        {
+            "title": "What's something you feel is undervalued that you contribute to the team?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "What part of your job do you wish you didn't have to do?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "Is your job what you expected when you accepted it?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "What helps you feel connected to others and counteract the potential loneliness of working remotely?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "What's your setup like for working? Is there anything you feel you're missing?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "What routines or habits help you be at your best and work sustainably?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "Who on your team makes those around them better? What do they do?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "If you were forming a new team, who are the people you'd most want on your team? Why them?",
+            "source": "https://getlighthouse.com/blog/one-on-one-meeting-questions-great-managers-ask/"
+        },
+        {
+            "title": "What's the best use of our time today?",
+            "source": "https://firstround.notion.site/Question-Bank-for-Better-1-1s-6134003d72b54f56b8d11a5134a263cf"
+        },
+        {
+            "title": "Last time we spoke you said [X] was challenging for you; how's that going?",
+            "source": "https://firstround.notion.site/Question-Bank-for-Better-1-1s-6134003d72b54f56b8d11a5134a263cf"
+        },
+        {
+            "title": "What are the things you've done since you joined you're the most proud about?",
+            "source": "https://firstround.notion.site/Question-Bank-for-Better-1-1s-6134003d72b54f56b8d11a5134a263cf"
+        },
+        {
+            "title": "What's the split of your time today between [X/Y/Z]? What would you like to spend more/less time on?",
+            "source": "https://firstround.notion.site/Question-Bank-for-Better-1-1s-6134003d72b54f56b8d11a5134a263cf"
+        },
+        {
+            "title": "What's harder than it should be?",
+            "source": "https://firstround.notion.site/Question-Bank-for-Better-1-1s-6134003d72b54f56b8d11a5134a263cf"
+        },
+        {
+            "title": "What are the biggest time wasters/savers?",
+            "source": "https://firstround.notion.site/Question-Bank-for-Better-1-1s-6134003d72b54f56b8d11a5134a263cf"
+        },
+        {
+            "title": "What is the area that, if you made an improvement, would give you the greatest return?",
+            "source": "https://firstround.notion.site/Question-Bank-for-Better-1-1s-6134003d72b54f56b8d11a5134a263cf"
+        },
+        {
+            "title": "What can I do to make you more successful?",
+            "source": "https://firstround.notion.site/Question-Bank-for-Better-1-1s-6134003d72b54f56b8d11a5134a263cf"
+        },
+        {
+            "title": "What have you learned since we last met?"
+        },
+        {
+            "title": "Are there any projects you'd really like to work on if you were given the opportunity?"
+        },
+        {
+            "title": "Is there a situation you'd like my help with?"
+        },
+        {
+            "title": "What are 3 things would you buy to improve your productivity if money was no object?"
+        },
+        {
+            "title": "How could I have gotten a better result on [x]?"
+        },
+        {
+            "title": "What perspective am I missing?"
+        },
+        {
+            "title": "What needs to be said that I'm not talking about?"
+        },
+        {
+            "title": "What do you notice about the way I work, that I might not realize?"
+        },
+        {
+            "title": "What does success look like?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What are some pitfalls to avoid?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Why did you decide to work here? ",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Are there things that always put you in a bad mood that I should be aware of?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Are there any manager behaviors that you know you dislike?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "How's life outside of work?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What are your favorite podcasts/books?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What is one belief that you've had your whole life that you think has helped you become who you are today?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "How do you like to organize your day?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "How do you know that you've had a productive day?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Do you feel that your work is appreciated?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What kind of a workplace would help you be the happiest version of you? ",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What would need to happen in the next week at work to give you great satisfaction?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "When have you felt stressed or overwhelmed in the past month? What can I do to prevent that?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Are there any obstacles that prevent you from doing your best (obstacles at work, or if you want to talk about it, personal)",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "If you had to point to something that was holding you back or slowing you down in achieving your goals, what would you say that would be?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Would you like more or less direction from me?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What's one thing that you think I don't want to hear but that would be good for me to hear?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Is there something I'm doing that I could delegate to someone on the team?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What's one thing you can stop doing to get better results/improve?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Do you feel challenged at work? Are you learning new things?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Are there any skills that you think would be useful for you to acquire in the short term?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What additional training or education would you like?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What are some habits that you want to get rid of?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What are some habits you'd like to develop?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What work are you doing here that is most in line with your long term goals?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Let's imagine that we are 10 years in the future and our organization has grown exponentially in the process. What would you like to be doing here?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Are there any new ideas you'd like to discuss with me/the team?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "How do you find working with your team?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Do you feel comfortable giving constructive feedback to your peers?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Is there anything we can do to improve team dynamics?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What is a team building activity that we could do?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What are your thoughts on the way we all communicate about the work we are doing?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What is the #1 opportunity for our company?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "Are our 1-on-1 meetings a good use of your time? ",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What was the most useful part of our conversation today?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "What were the top takeaways from today? What are our next steps?",
+            "source": "https://fellow.app/blog/meetings/one-on-one-meeting-questions-for-managers/"
+        },
+        {
+            "title": "If you could get rid of any task/project/responsibility currently on your plate, what would it be?"
+        },
+        {
+            "title": "What would you change about a previous manager? What did you wish they did a little more of or a little less of?"
+        },
+        {
+            "title": "Can I address any recent changes that you're curious or concerned about?",
+            "source": "https://marcorogers.com/blog/my-approach-to-1-on-1s"
+        }
+    ];
+    const pickQuestion = () => {
+        const {title, source} = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
+        document.getElementById("title").innerHTML = title;
+        document.getElementById("source").innerHTML = source ? `Source: <a href="${source}">${source}</a>` : "";
+    }
+    pickQuestion();
+</script>
