@@ -4,7 +4,8 @@ title: Leo P at the Proms
 category: Music
 ---
 
-[Uploaded to YouTube](https://www.youtube.com/watch?v=xU5-Pr8xJ-o) by [Xtela](https://www.instagram.com/xtela.10/) on 26 August 2017
+[Uploaded to YouTube](https://www.youtube.com/watch?v=xU5-Pr8xJ-o) by [Xtela](https://www.instagram.com/xtela.10/) on 26
+August 2017
 
 {% include video.html src="https://xade.eu/videos/leo-at-the-proms.mp4" %}
 

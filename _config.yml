@@ -3,7 +3,7 @@ author: Xavier Delamotte
 description: Random stuff I want to share
 baseurl: /blog # the subpath of your site, e.g. /blog
 url: "https://xade.eu" # the base hostname & protocol for your site, e.g. http://example.com
-github_username:  x4d3
+github_username: x4d3
 # Build settings
 plugins:
   - jekyll-feed
@@ -14,8 +14,8 @@ search: true
 
 markdown: CommonMarkGhPages
 commonmark:
-  options: ["UNSAFE", "SMART", "FOOTNOTES"]
-  extensions: ["strikethrough", "autolink", "table"]
+  options: [ "UNSAFE", "SMART", "FOOTNOTES" ]
+  extensions: [ "strikethrough", "autolink", "table" ]
 
 highlighter: rouge
 
@@ -36,10 +36,10 @@ jekyll-archives:
 # The following items will not be processed, by default. Create a custom list
 # to override the default setting.
 exclude:
- - Gemfile
- - Gemfile.lock
- - node_modules
- - vendor/bundle/
- - vendor/cache/
- - vendor/gems/
- - vendor/ruby/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/

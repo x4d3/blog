@@ -85,7 +85,6 @@ jobs:
 
 ### Ruby script to create posts automatically
 
-
 ```ruby
 #!/usr/bin/env ruby
 

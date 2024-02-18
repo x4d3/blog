@@ -5,7 +5,8 @@ category: Random
 ---
 
 There are so many names for Germany:
- - 🇩🇪 Deutschland
+
+- 🇩🇪 Deutschland
 - 🇬🇧 Germany
 - 🇫🇷 Allemagne
 - 🇵🇱 Niemcy
@@ -13,6 +14,5 @@ There are so many names for Germany:
 - 🇫🇮 Saksa
 - 🇷🇸 Nemačka
 - 🇱🇹 Vokietija
-
 
 [Wikipedia article: Names of Germany](https://en.wikipedia.org/wiki/Names_of_Germany)
