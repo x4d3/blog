@@ -1,0 +1,56 @@
+---
+layout: post
+title: Text Converter
+category: Dev
+---
+<style>
+    input {
+        width: 100%;
+    }
+    select {
+        width: 100%;
+    }
+</style>
+
+<select id="selector"></select>
+<p>
+    <label>Input</label>
+    <input id="input" placeholder="Type/Paste Your Text Here">
+</p>
+<p>
+    <label>Output</label>
+    <input id="output">
+</p>
+<button id="copy">Copy 📋</button>
+
+
+<script src="text-converter.js"></script>
+<script>
+    const TRANSFORMATIONS = ["BoldItalicsSans", "Emoji", "Vaporwave", "Square", "BlackSquare", "Strikethrough", "Underline", "DoubleUnderline", "BoldCursive", "Cursive", "SmallCaps", "TinyText", "Bold", "Circled", "Backwards"];
+
+    const input = document.getElementById("input");
+    const output = document.getElementById("output");
+    const copy = document.getElementById("copy");
+    const selector = document.getElementById("selector");
+
+    for (const transformation of TRANSFORMATIONS) {
+        const option = document.createElement("option");
+        option.value = transformation;
+        option.text = transformation;
+        selector.add(option);
+    }
+    const refresh = () => {
+        output.value = window[selector.value](input.value)
+    }
+
+    input.onkeyup = refresh;
+    selector.onchange = refresh;
+
+    copy.onclick = () => {
+        output.select();
+        output.setSelectionRange(0, 99999); // For mobile devices
+        navigator.clipboard.writeText(output.value);
+    }
+</script>
+
+
