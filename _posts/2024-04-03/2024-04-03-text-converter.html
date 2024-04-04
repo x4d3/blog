@@ -7,6 +7,7 @@ category: Dev
     input {
         width: 100%;
     }
+
     select {
         width: 100%;
     }
@@ -23,24 +24,30 @@ category: Dev
 </p>
 <button id="copy">Copy 📋</button>
 
-
+<script src="luni.js"></script>
 <script src="text-converter.js"></script>
 <script>
-    const TRANSFORMATIONS = ["BoldItalicsSans", "Emoji", "Vaporwave", "Square", "BlackSquare", "Strikethrough", "Underline", "DoubleUnderline", "BoldCursive", "Cursive", "SmallCaps", "TinyText", "Bold", "Circled", "Backwards"];
+    const TRANSFORMATIONS = ["Bold", "Italics", "BoldItalicsSans", "BoldItalicsSerif", "Strikethrough",
+        "Emoji", "Vaporwave", "Square", "BlackSquare", "BlackCircled", "DoubleUnderline", "Cursive", "BoldCursive", "SmallCaps", "TinyText", "Circled",
+        "Backwards", "Cursed", "Wonky", "Gothic", "BoldGothic", "Mono", "Squiggle1", "Ancient", "Fireworks", "Stinky", "Seagull", "Musical", "Frame", "Bracket", "DarkBracket", "Asian", "Tribal"];
 
     const input = document.getElementById("input");
     const output = document.getElementById("output");
     const copy = document.getElementById("copy");
     const selector = document.getElementById("selector");
 
-    for (const transformation of TRANSFORMATIONS) {
+    const transform = (mode, value) => {
+        return window[mode](value);
+    }
+
+    for (const t of TRANSFORMATIONS) {
         const option = document.createElement("option");
-        option.value = transformation;
-        option.text = transformation;
+        option.value = t;
+        option.text = transform(t, t);
         selector.add(option);
     }
     const refresh = () => {
-        output.value = window[selector.value](input.value)
+        output.value = transform(selector.value, input.value)
     }
 
     input.onkeyup = refresh;

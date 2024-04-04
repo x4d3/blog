@@ -1,3 +1,4 @@
+const luni = new Lunicode();
 var alpha_default = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var keys = alpha_default.split('');
 var tinytext = {
@@ -1770,6 +1771,7 @@ function Tribal(text) {
     var values = 'ꍏꌃꉓꀸꍟꎇꁅꃅꀤꀭꀘ꒒ꂵꈤꂦꉣꆰꋪꌗ꓄ꀎꃴꅏꊼꌩꁴꍏꌃꉓꀸꍟꎇꁅꃅꀤꀭꀘ꒒ꂵꈤꂦꉣꆰꋪꌗ꓄ꀎꃴꅏꊼꌩꁴ0123456789';
     return convert_text(text, keys, values);
 }
+
 function convert_text(text, keys, values) {
     values = [...values];
     if (values.length == 186) {
