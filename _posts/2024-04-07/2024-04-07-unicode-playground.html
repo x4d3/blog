@@ -1,0 +1,103 @@
+---
+layout: post
+title: Unicode Playground
+category: Dev
+---
+<style>
+    body {
+        font-family: Arial Unicode MS;
+    }
+
+    main {
+        padding: 10px;
+    }
+
+    input {
+        width: 100%;
+    }
+
+    select {
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+    }
+</style>
+
+
+<input id="selector" list="datalist" value="Basic Latin">
+<datalist id="datalist">
+</datalist>
+
+<pre id="output"></pre>
+<button id="download">Download 📋</button>
+<button id="load-all">Load All</button>
+
+<script type="module">
+    const range = (start, stop, step = 1) =>
+        Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
+
+    const datalist = document.getElementById("datalist");
+    const selector = document.getElementById("selector");
+    const output = document.getElementById("output")
+    const downloadButton = document.getElementById("download");
+    const loadAllButton = document.getElementById("load-all");
+    const loadUnicodeBlocks = async () => {
+        const response = await fetch("unicode_blocks.csv");
+        const text = await response.text();
+        return text.split("\n").filter(Boolean).reduce((acc, line) => {
+            const [name, start, end] = line.split(";");
+            acc[name] = [parseInt(start, 10), parseInt(end, 10)];
+            return acc;
+        }, {});
+    }
+    const blocks = await loadUnicodeBlocks();
+    for (const block of Object.keys(blocks)) {
+        const option = document.createElement("option");
+        option.value = block
+        datalist.appendChild(option);
+    }
+
+    const generateUnicodeCharacters = (start, end) => range(start, end + 1).map(i => String.fromCodePoint(i));
+
+    const refresh = () => {
+        output.innerHTML = "";
+        const block = blocks[selector.value];
+        if (!block) {
+            return;
+        }
+        const [start, end] = block;
+        const chars = generateUnicodeCharacters(start, end);
+        output.innerHTML = chars.join("").match(/.{1,60}/g).join("\n")
+
+    };
+    selector.onchange = refresh
+    refresh();
+
+    downloadButton.onclick = () => {
+        const allUnicodesText = Object.entries(blocks).map(([name, [start, end]]) => {
+            const chars = generateUnicodeCharacters(start, end);
+            return `${name}\n${chars.join("").match(/.{1,80}/g).join("\n")}`;
+        }).join("\n\n");
+        //make sure the blob is utf8 encoded
+        const blob = new Blob([allUnicodesText], {type: "text/plain;charset=utf-8"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `unicode.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    loadAllButton.onclick = () => {
+        const allUnicodesText = Object.entries(blocks).map(([name, [start, end]]) => {
+            const chars = generateUnicodeCharacters(start, end);
+            return `${name}\n${chars.join("").match(/.{1,80}/g).join("\n")}`;
+        }).join("\n\n");
+        output.innerHTML = allUnicodesText;
+    }
+
+
+</script>
+
