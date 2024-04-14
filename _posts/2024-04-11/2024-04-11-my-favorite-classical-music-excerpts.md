@@ -4,9 +4,9 @@ title: My Favorite Classical Music Excerpts
 category: Music
 ---
 
-## Holst, The Planets, 'Mars', 7th bar of VII
+## Holst, The Planets, 'Mars'
 
-{% include youtube.html id="cXOanvv4plU?si=se9JVbptRzcrscOM&amp;start=246" %}
+7th bar of VII, The full brass ostinato, [at 4:06](https://youtu.be/cXOanvv4plU?si=Z3o5cSPQB421h6XH&t=246)
 
 <details>
   <summary><a href="https://xade.eu/music-library/holst-planets-mars.pdf" >holst-planets-mars.pdf</a> Page 20</summary>
@@ -17,9 +17,9 @@ category: Music
 
 </details>
 
-## Tchaikovsky, Symphony No.5, 1st movement, 1st bar of Z
+## Tchaikovsky, Symphony No.5, 1st movement
+1st bar of Z, the full orchestra, [at 14:28](https://youtu.be/NeNeQrUXymg?si=gWhRmxWlxHUDUAQS&t=868)
 
-{% include youtube.html id="NeNeQrUXymg?si=BLaNI4EBoCUSRc_R&amp;start=875" %}
 
 <details>
   <summary><a href="https://xade.eu/music-library/tchaikovsky-symphony-5-1st-mvmt.pdf" >tchaikovsky-symphony-5-1st-mvmt.pdf</a> Page 65</summary>
@@ -29,14 +29,28 @@ category: Music
 
 </details>
 
+## Tchaikovsky: Swan Lake Suite, Op. 20a - II. Valse
 
-## Dukas, L'apprenti sorcier, bar 14 of (49)
+bar 20 of (19), the low brass, [at 6:17](https://youtu.be/hxAsJGflQCg?si=qEMtJv7bWSxhwNHe&t=377)
 
-The Cornet Solo.
+<details>
+  <summary><a href="https://xade.eu/music-library/tchaikovsky-swan-lake-20a-valse.pdf" >tchaikovsky-swan-lake-20a-valse.pdf</a> Page 28</summary>
+
+![tchaikovsky-swan-lake-valse-28.jpg](tchaikovsky-swan-lake-valse-28.jpg)
+![tchaikovsky-swan-lake-valse-29.jpg](tchaikovsky-swan-lake-valse-29.jpg)
+![tchaikovsky-swan-lake-valse-30.jpg](tchaikovsky-swan-lake-valse-30.jpg)
+![tchaikovsky-swan-lake-valse-31.jpg](tchaikovsky-swan-lake-valse-31.jpg)
+![tchaikovsky-swan-lake-valse-32.jpg](tchaikovsky-swan-lake-valse-32.jpg)
+![tchaikovsky-swan-lake-valse-33.jpg](tchaikovsky-swan-lake-valse-33.jpg)
+
+</details>
+
+
+## Dukas, L'apprenti sorcier, 
+
+bar 14 of (49), the Cornet Solo, [at 7:50](https://youtu.be/U4yH4B9deok?si=BKVdL1IfKJuLKNcP&t=470)
 
 ![Cornet Solo](dukas-apprenti-sorcier-cornet-solo.png)
-
-{% include youtube.html id="U4yH4B9deok?si=ZbI4lD1zv8o1-1QL&amp;start=470" %}
 
 
 <details>
