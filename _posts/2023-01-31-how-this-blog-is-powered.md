@@ -80,27 +80,26 @@ jobs:
           username: iforever
           password: ${{ secrets.ftp_password }}
           server-dir: xade/blog/
-
 ```
 
 ### Ruby script to create posts automatically
 
 ```ruby
 #!/usr/bin/env ruby
-
 require 'time'
 require 'fileutils'
 require 'erb'
+require 'optparse'
 TEMPLATE = <<~EOS
   ---
   layout: post
   title: <%= title %>
-  category: Music
+  category: Music Dev Random Literature Video Games Comics Management
   ---
 EOS
 
 def slugify(s)
-   s.downcase.strip.gsub(' ', '-').gsub(/[^\w-]/, '')
+  s.downcase.strip.gsub(' ', '-').gsub(/[^\w-]/, '')
 end
 
 
@@ -111,15 +110,20 @@ ERBContext = Struct.new(:title, keyword_init: true) do
 end
 FOLDER = "_posts"
 
-def create_post(title)
+def create_post(title:, create_folder:)
   date = Date.today
 
   context = ERBContext.new(title: title)
   result = ERB.new(TEMPLATE).result(context.access_binding)
-
-  filename = "#{date.strftime('%Y-%m-%d')}-#{slugify(title)}.md"
-  filepath = File.join(FOLDER, filename)
-
+  formatted_date = date.strftime('%Y-%m-%d')
+  filename = "#{formatted_date}-#{slugify(title)}.md"
+  filepath =
+    if create_folder
+      File.join(FOLDER, formatted_date, filename)
+    else
+      File.join(FOLDER, filename)
+    end
+  FileUtils.mkdir_p File.dirname(filepath)
   if File.exist?(filepath)
     warn "File #{filepath} already exists"
   else
@@ -128,11 +132,12 @@ def create_post(title)
   end
 end
 
+options = {}
+OptionParser.new do |opt|
+  opt.on("-f", "--folder", "Create Folder")
+end.parse!(into: options)
 
 raise "provide the title as argument" if ARGV.empty?
 
-create_post(ARGV.join(' '))
+create_post(title: ARGV.join(' '), create_folder: options[:folder])
 ```
-
-
-

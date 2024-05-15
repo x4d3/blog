@@ -9,12 +9,10 @@ Why didn’t they just go to a goddamned obstetrician-gynecologist?
 Exported from https://www.vice.com/en/article/53d4db/womens-healthcare-star-wars which was posted on 03 January 2017
 by [Sarah Jeong](https://sarahjeong.net/)
 
-
 <figure>
   <img src="padme.webp" alt="Anakin's Force-vision of Padme's death">
   <figcaption>Anakin's Force-vision of Padme's death</figcaption>
 </figure>
-
 
 The central, overarching conflict of the first six Star Wars movies is that a democratic republic devolves into an
 authoritarian dictatorship. A key part of that political coup is Anakin Skywalker turning to the dark side and becoming
@@ -182,7 +180,6 @@ Darth Vader Force-chokes Admiral Ozzel (left) while simultaneously promoting Cap
   <img src="promoting.webp" alt="Promoting">
   <figcaption>Darth Vader force-chokes admiral Ozzel (left) while simultaneously promoting captain Piett (right) to admiral</figcaption>
 </figure>
-
 
 And besides, if Palpatine could remotely kill or even locate someone across hyperspace distances via the Force, there
 would probably be a few people ahead of Padme on the list. For example, Obi-Wan Kenobi, who is known to be accompanying

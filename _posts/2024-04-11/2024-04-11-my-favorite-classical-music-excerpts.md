@@ -18,8 +18,8 @@ category: Music
 </details>
 
 ## Tchaikovsky, Symphony No.5, 1st movement
-1st bar of Z, the full orchestra, [at 14:28](https://youtu.be/NeNeQrUXymg?si=gWhRmxWlxHUDUAQS&t=868)
 
+1st bar of Z, the full orchestra, [at 14:28](https://youtu.be/NeNeQrUXymg?si=gWhRmxWlxHUDUAQS&t=868)
 
 <details>
   <summary><a href="https://xade.eu/music-library/tchaikovsky-symphony-5-1st-mvmt.pdf" >tchaikovsky-symphony-5-1st-mvmt.pdf</a> Page 65</summary>
@@ -45,13 +45,11 @@ bar 20 of (19), the low brass, [at 6:17](https://youtu.be/hxAsJGflQCg?si=qEMtJv7
 
 </details>
 
-
-## Dukas, L'apprenti sorcier, 
+## Dukas, L'apprenti sorcier
 
 bar 14 of (49), the Cornet Solo, [at 7:50](https://youtu.be/U4yH4B9deok?si=BKVdL1IfKJuLKNcP&t=470)
 
 ![Cornet Solo](dukas-apprenti-sorcier-cornet-solo.png)
-
 
 <details>
   <summary><a href="https://xade.eu/music-library/dukas-apprenti-sorcier.pdf" >dukas-apprenti-sorcier.pdf</a> Page 54</summary>

@@ -37,8 +37,7 @@ My advice is from someone who…
 My experiences over the last 20 years have shaped how I view software, and have led me to some beliefs which I’ve tried
 to whittle down to a manageable list that I hope you find valuable.
 
-On with the list
-----------------
+## On with the list
 
 ### 1\. I still don’t know very much
 
