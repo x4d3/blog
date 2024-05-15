@@ -1,9 +1,7 @@
 ---
 layout: post
 title: "Contes d'Hoffman: Septet"
-subtitle: Helas, Mon coeur s'egare encore
-categories:
-- Music
+category: Music
 ---
 
 I do like when everyone is singing at the same time.
