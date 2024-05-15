@@ -10,7 +10,6 @@ category: Music
 >
 > S'en aller cultiver ses tomates
 
-
 [Un enfant de la pollution](https://genius.com/Starmania-un-enfant-de-la-pollution-lyrics)
 
 > Le parfum de l’essence
@@ -22,7 +21,6 @@ category: Music
 > On aime que soi-même
 >
 > Comment veux-tu qu’on s’aime?
-
 
 [Monopolis](https://paroles2chansons.lemonde.fr/paroles-starmania/paroles-monopolis.html)
 

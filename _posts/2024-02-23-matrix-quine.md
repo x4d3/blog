@@ -3,6 +3,7 @@ layout: post
 title: Matrix Quine
 category: Dev
 ---
+
 An animated quine in only 187 bytes of HTML+JS:
 
 ```html
