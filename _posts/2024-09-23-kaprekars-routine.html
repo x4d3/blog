@@ -1,0 +1,53 @@
+---
+layout: post
+title: Kaprekar's routine
+category: Maths
+---
+
+
+<p>In number theory, Kaprekar&#39;s routine is an iterative algorithm named after its inventor, Indian mathematician D.
+    R. Kaprekar. Each iteration starts with a number, sorts the digits into descending and ascending order, and
+    calculates the difference between the two new numbers.</p>
+<p>As an example, starting with the number 8991 in base 10:</p>
+<pre><code>9981 – 1899 = 8082
+8820 – 0288 = 8532
+8532 – 2358 = 6174
+7641 – 1467 = 6174
+</code></pre>
+<p>6174, known as <a href="https://en.wikipedia.org/wiki/6174">Kaprekar&#39;s constant</a>, is a fixed point of this
+    algorithm. Any four-digit number (in base 10) with at least two distinct digits will reach 6174 within seven
+    iterations. The algorithm runs on any natural number in any given number base.</p>
+
+
+<p>Try it out !</p>
+
+<input id="input" type="number" min="0" max="9999" value="8991">
+<pre id="recipe"></pre>
+<script>
+    const input = document.getElementById("input");
+    const recipe = document.getElementById("recipe");
+
+    const updateRecipe = () => {
+        const value = parseInt(input.value, 10);
+        if (isNaN(value) || value < 1 || value > 9999) {
+            recipe.innerText = "Enter a value between 1 and 9999"
+            return;
+        }
+        const path = []
+        let current = String(value).padStart(4, '0')
+        while (current !== "6174" && current !== "0000") {
+            const numbers = current.split('').map(x => parseInt(x, 10))
+            numbers.sort((a, b) => b - a);
+            const biggest = numbers.join("");
+            const smallest = numbers.reverse().join("");
+            current = String(parseInt(biggest) - parseInt(smallest)).padStart(4, '0')
+            path.push(`${biggest} – ${smallest} = ${current}`)
+        }
+        recipe.innerText = path.join("\n")
+    };
+
+    input.oninput = () => {
+        updateRecipe();
+    }
+    updateRecipe()
+</script>
