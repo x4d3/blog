@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", (event) => {
     const output = document.getElementById("output");
+    const copy = document.getElementById("copy");
+
     const form = document.getElementById("main-form");
 // Debouncing function to limit the frequency of updates
     let debounceTimer;
@@ -26,6 +28,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
             }, 100); // Debounce delay of 300ms
         }
     });
+
+    addCopyToClipboardOnButton(copy,()=> output.value)
 
 });
 
