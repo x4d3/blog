@@ -1,0 +1,58 @@
+---
+layout: post
+title: Sort List
+category: Random
+---
+
+<textarea id="list" rows="15">Beyoncé
+Britney Spears
+Céline Dion
+Lady Gaga
+Madonna
+Mariah Carey
+Rihanna
+Taylor Swift
+Whitney Houston
+</textarea>
+
+<button id="sort">🔡 Sort</button>
+<ol id="output"></ol>
+
+<style>
+    small {
+        margin: 10px;
+        color: grey;
+        font-size: small;
+    }
+
+    .popup {
+        font-size: 8rem;
+        background-color: var(--bg);
+        position: fixed;
+        width: 100%;
+        height: 100%;
+    }
+    .popup .content{
+        height: 80%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .popup  .column {
+        flex: 50%;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .closeButton {
+        cursor: pointer;
+        float: right;
+        width:50px;
+    }
+
+</style>
+
+<script src="lz-string.js"></script>
+<script src="sort-lists.js"></script>
+
