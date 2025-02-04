@@ -80,12 +80,16 @@ async function quickSort(arr, asyncCompare, left = 0, right = arr.length - 1) {
     return arr;
 }
 
+const decrypt = message => {
+    return LZString144.decompressFromEncodedURIComponent(message);
+}
 
+const encrypt = message => {
+    return LZString144.compressToEncodedURIComponent(message);
+}
 
 function compareItems(a, b) {
     return new Promise((resolve, reject) => {
-        console.log(a, b)
-
         const popup = document.createElement("article");
         popup.classList.add("popup");
         const closeButton = document.createElement("img");
@@ -98,18 +102,18 @@ function compareItems(a, b) {
 
 
         const leftColumn = document.createElement("div");
-        leftColumn.classList.add("column");
+        leftColumn.classList.add("column", "big");
         leftColumn.textContent = a;
         content.appendChild(leftColumn);
 
-
         const rightColumn = document.createElement("div");
-        rightColumn.classList.add("column");
+        rightColumn.classList.add("column", "big");
         rightColumn.textContent = b;
         content.appendChild(rightColumn);
         popup.appendChild(content);
 
         document.body.appendChild(popup);
+
         const closePopup = () => {
             document.removeEventListener("keydown", onkeydown);
             popup.remove();
@@ -129,12 +133,12 @@ function compareItems(a, b) {
 
         rightColumn.onclick = (e) => {
             e.preventDefault();
-            chooseResult(-1)
+            chooseResult(1)
         };
 
         leftColumn.onclick = (e) => {
             e.preventDefault();
-            chooseResult(1)
+            chooseResult(-1)
         };
 
         const onkeydown = (e) => {
@@ -145,10 +149,10 @@ function compareItems(a, b) {
                     stopSort();
                     break;
                 case "ArrowRight":
-                    chooseResult(-1)
+                    chooseResult(1)
                     break;
                 case "ArrowLeft":
-                    chooseResult(1)
+                    chooseResult(-1)
                     break;
                 default:
                     break;
@@ -156,22 +160,52 @@ function compareItems(a, b) {
         };
         document.addEventListener("keydown", onkeydown);
     });
-
 }
 
-document.addEventListener("DOMContentLoaded", (event) => {
-
+document.addEventListener("DOMContentLoaded", async (event) => {
     const list = document.getElementById("list");
-    const output = document.getElementById("output");
+    const shareUrl = document.getElementById("shareUrl");
+    const copyButton = document.getElementById("copy");
 
-    const sortButton = document.getElementById("sort");
-    sortButton.onclick = async () => {
-        console.log("onclick")
-        const array = list.value.split("\n").filter((n) => n);
-        await quickSort(array, compareItems)
-        list.value = array.join("\n");
-        output.innerHTML = array.map(v => `<li>${v}</li>`).join("")
-    };
+    const QUERY_PARAM = "q";
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get(QUERY_PARAM);
+    if (query) {
+        const array = decrypt(query).split("\n").filter(e => e)
+        await quickSort(array, compareItems);
+        list.value = array.join("\n")
 
+        const popup = document.createElement("article");
+        popup.classList.add("popup");
+        const content = document.createElement("div");
+        content.classList.add("content");
+        const column = document.createElement("div");
+        column.classList.add("medium")
+        column.innerHTML = "<p>Your ranking is: </p><ol>" + array.map(v => `<li>${v}</li>`).join("") + "</ol>";
+
+        const closeButton = document.createElement("button");
+        closeButton.innerText = "📋 Make your own list"
+        column.appendChild(closeButton);
+        content.appendChild(column);
+        popup.appendChild(content);
+        document.body.appendChild(popup);
+
+        closeButton.onclick = () => {
+            popup.remove();
+            const url = new URL(window.location.href);
+            url.searchParams.delete(QUERY_PARAM);
+            history.replaceState({}, "", url);
+        };
+    }
+    const updateLink = () => {
+        const url = new URL(window.location.href);
+        const encrypted = encrypt(list.value);
+        url.searchParams.set(QUERY_PARAM, encrypted);
+        shareUrl.href = url.toString();
+        shareUrl.innerText = url.toString();
+    }
+    list.oninput = updateLink;
+    updateLink();
+    addCopyToClipboardOnButton(copyButton, () => shareUrl.href);
 });
 

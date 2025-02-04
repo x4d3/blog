@@ -1,22 +1,23 @@
 ---
 layout: post
-title: Sort List
+title: Rank Stuff
 category: Random
 ---
 
-<textarea id="list" rows="15">Beyoncé
-Britney Spears
-Céline Dion
-Lady Gaga
-Madonna
-Mariah Carey
-Rihanna
-Taylor Swift
-Whitney Houston
+Separate items by new lines, and send the
+
+<textarea id="list" rows="15">Tomato
+Spinach
+Carrots
+Broccoli
 </textarea>
 
-<button id="sort">🔡 Sort</button>
-<ol id="output"></ol>
+<label>Share URL</label>
+<a id="shareUrl" target="_blank"></a>
+<p>
+
+    <button id="copy">📋 Copy</button>
+</p>
 
 <style>
     small {
@@ -26,33 +27,43 @@ Whitney Houston
     }
 
     .popup {
-        font-size: 8rem;
         background-color: var(--bg);
         position: fixed;
         width: 100%;
         height: 100%;
     }
-    .popup .content{
+
+    .popup .content {
         height: 80%;
         display: flex;
         justify-content: center;
         align-items: center;
     }
 
-    .popup  .column {
+    .popup .column {
+        font-size: 8rem;
         flex: 50%;
         text-align: center;
         padding: 10px;
+        cursor: pointer;
+    }
+
+    .big {
+        font-size: 8rem;
+    }
+
+    .medium {
+        font-size: 2rem;
     }
 
     .closeButton {
         cursor: pointer;
         float: right;
-        width:50px;
+        width: 50px;
     }
-
 </style>
 
+<script src="{{"/assets/js/clipboard.js" | relative_url }}"></script>
 <script src="lz-string.js"></script>
-<script src="sort-lists.js"></script>
+<script src="rank-stuff.js"></script>
 
