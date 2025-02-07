@@ -199,7 +199,7 @@ const displayEdit = (values) => {
 }
 
 const displayResult = (array) => {
-    const popup = document.createElement("article");
+    const popup = document.createElement("div");
     popup.classList.add("popup");
     const content = document.createElement("div");
     content.classList.add("medium")
