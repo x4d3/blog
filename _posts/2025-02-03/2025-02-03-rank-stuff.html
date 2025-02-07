@@ -4,62 +4,49 @@ title: Rank Stuff
 category: Random
 ---
 
-Separate items by new lines, and send the
-
-<textarea id="list" rows="15">Tomato
-Spinach
-Carrots
-Broccoli
-</textarea>
-
-<label>Share URL</label>
-<a id="shareUrl" target="_blank"></a>
-<p>
-
-    <button id="copy">📋 Copy</button>
-</p>
+<div id="app"></div>
 
 <style>
-    small {
-        margin: 10px;
-        color: grey;
-        font-size: small;
-    }
-
     .popup {
         background-color: var(--bg);
         position: fixed;
-        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         height: 100%;
+        width: 100%;
     }
 
-    .popup .content {
-        height: 80%;
+    .column {
+        width: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
-    }
-
-    .popup .column {
-        font-size: 8rem;
-        flex: 50%;
-        text-align: center;
-        padding: 10px;
         cursor: pointer;
+        height: 100vh;
+
     }
 
     .big {
-        font-size: 8rem;
+        font-size: 3rem;
     }
 
     .medium {
-        font-size: 2rem;
+        font-size: 1.5rem;
     }
 
-    .closeButton {
-        cursor: pointer;
-        float: right;
-        width: 50px;
+    @media (min-width: 768px) {
+        .big {
+            font-size: 8rem;
+        }
+
+        .medium {
+            font-size: 2rem;
+        }
+
+        .column {
+            width: 50%;
+        }
     }
 </style>
 

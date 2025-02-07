@@ -80,6 +80,12 @@ async function quickSort(arr, asyncCompare, left = 0, right = arr.length - 1) {
     return arr;
 }
 
+const DEFAULT_VALUE = `Tomato
+Spinach
+Carrots
+Broccoli
+`
+
 const decrypt = message => {
     return LZString144.decompressFromEncodedURIComponent(message);
 }
@@ -90,27 +96,19 @@ const encrypt = message => {
 
 function compareItems(a, b) {
     return new Promise((resolve, reject) => {
-        const popup = document.createElement("article");
+        const popup = document.createElement("div");
         popup.classList.add("popup");
-        const closeButton = document.createElement("img");
-        closeButton.src = "close.svg";
-        closeButton.classList.add("closeButton");
-        popup.appendChild(closeButton);
-
-        const content = document.createElement("div");
-        content.classList.add("content");
 
 
-        const leftColumn = document.createElement("div");
+        const leftColumn = document.createElement("article");
         leftColumn.classList.add("column", "big");
         leftColumn.textContent = a;
-        content.appendChild(leftColumn);
+        popup.appendChild(leftColumn);
 
-        const rightColumn = document.createElement("div");
+        const rightColumn = document.createElement("article");
         rightColumn.classList.add("column", "big");
         rightColumn.textContent = b;
-        content.appendChild(rightColumn);
-        popup.appendChild(content);
+        popup.appendChild(rightColumn);
 
         document.body.appendChild(popup);
 
@@ -129,7 +127,6 @@ function compareItems(a, b) {
             resolve(value)
         };
 
-        closeButton.onclick = stopSort;
 
         rightColumn.onclick = (e) => {
             e.preventDefault();
@@ -142,17 +139,9 @@ function compareItems(a, b) {
         };
 
         const onkeydown = (e) => {
-            e.preventDefault();
-            console.log(e);
             switch (e.code) {
                 case "Escape":
                     stopSort();
-                    break;
-                case "ArrowRight":
-                    chooseResult(1)
-                    break;
-                case "ArrowLeft":
-                    chooseResult(-1)
                     break;
                 default:
                     break;
@@ -162,50 +151,135 @@ function compareItems(a, b) {
     });
 }
 
-document.addEventListener("DOMContentLoaded", async (event) => {
-    const list = document.getElementById("list");
-    const shareUrl = document.getElementById("shareUrl");
-    const copyButton = document.getElementById("copy");
+const PARAMS = {
+    ANSWER: "a",
+    RESULT: "r",
+    EDIT: "e"
+}
+const locationWithParam = (name, value) => {
+    const searchParams = new URLSearchParams([[name, value]])
+    return `${location.origin}${location.pathname}?${searchParams}`;
+}
 
-    const QUERY_PARAM = "q";
-    const urlParams = new URLSearchParams(window.location.search);
-    const query = urlParams.get(QUERY_PARAM);
-    if (query) {
-        const array = decrypt(query).split("\n").filter(e => e)
-        await quickSort(array, compareItems);
-        list.value = array.join("\n")
+const displayEdit = (values) => {
+    const app = document.getElementById("app");
+    app.innerHTML = "";
+    const paragraph = document.createElement("p");
+    paragraph.innerText = "Separate items by new lines, and send the Share URL to you friend so that they can do their own ranking.";
+    app.appendChild(paragraph);
 
-        const popup = document.createElement("article");
-        popup.classList.add("popup");
-        const content = document.createElement("div");
-        content.classList.add("content");
-        const column = document.createElement("div");
-        column.classList.add("medium")
-        column.innerHTML = "<p>Your ranking is: </p><ol>" + array.map(v => `<li>${v}</li>`).join("") + "</ol>";
+    const list = document.createElement("textarea");
+    list.rows = 15;
+    list.value = values;
+    app.appendChild(list)
 
-        const closeButton = document.createElement("button");
-        closeButton.innerText = "📋 Make your own list"
-        column.appendChild(closeButton);
-        content.appendChild(column);
-        popup.appendChild(content);
-        document.body.appendChild(popup);
+    const label = document.createElement("label");
+    label.innerText = "Share Url"
+    app.appendChild(label);
 
-        closeButton.onclick = () => {
-            popup.remove();
-            const url = new URL(window.location.href);
-            url.searchParams.delete(QUERY_PARAM);
-            history.replaceState({}, "", url);
-        };
-    }
+    const shareUrl = document.createElement("a");
+    app.appendChild(shareUrl);
+
+    const buttonParagraph = document.createElement("p");
+    const copyButton = document.createElement("button");
+    copyButton.innerText = "📋 Copy";
+    buttonParagraph.appendChild(copyButton)
+    app.appendChild(buttonParagraph);
     const updateLink = () => {
-        const url = new URL(window.location.href);
         const encrypted = encrypt(list.value);
-        url.searchParams.set(QUERY_PARAM, encrypted);
-        shareUrl.href = url.toString();
-        shareUrl.innerText = url.toString();
+        const answerUrl = locationWithParam(PARAMS.ANSWER, encrypted)
+        shareUrl.href = answerUrl.toString();
+        shareUrl.innerText = answerUrl.toString();
+        history.replaceState({}, "", locationWithParam(PARAMS.EDIT, encrypted));
+
     }
-    list.oninput = updateLink;
+    list.oninput = debounce(updateLink);
     updateLink();
     addCopyToClipboardOnButton(copyButton, () => shareUrl.href);
+}
+
+const displayResult = (array) => {
+    const popup = document.createElement("article");
+    popup.classList.add("popup");
+    const content = document.createElement("div");
+    content.classList.add("medium")
+    content.innerHTML = "<p>Your ranking is: </p><ol>" + array.map(v => `<li>${v}</li>`).join("") + "</ol>";
+
+    const closeButton = document.createElement("button");
+    closeButton.innerText = "📋 Make your own list"
+    content.appendChild(closeButton);
+    popup.appendChild(content);
+    document.body.appendChild(popup);
+
+    closeButton.onclick = () => {
+        popup.remove();
+        const url = locationWithParam(PARAMS.EDIT, encodeArrayToParam(array));
+        history.replaceState({}, "", url);
+        displayEdit(arrayToInput(array));
+    };
+}
+const debounce = function (func, timeout = 300) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            func.apply(this, args);
+        }, timeout);
+    };
+};
+/**
+ *
+ * @returns {string[]}
+ * @param query {string}
+ */
+const inputToArray = (query) => {
+    return query.split("\n").filter(e => e)
+}
+
+/**
+ *
+ * @returns {string}
+ * @param array {string[]}
+ */
+const arrayToInput = (array) => {
+    return array.join("\n");
+}
+
+
+/**
+ *
+ * @returns {string}
+ * @param array {string[]}
+ */
+const encodeArrayToParam = (array) => {
+    return encrypt(arrayToInput(array));
+}
+
+document.addEventListener("DOMContentLoaded", async (event) => {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const answerQuery = urlParams.get(PARAMS.ANSWER);
+    if (answerQuery) {
+        const input = decrypt(answerQuery);
+        const array = inputToArray(input);
+        await quickSort(array, compareItems);
+        displayResult(array);
+        const url = locationWithParam(PARAMS.RESULT, encodeArrayToParam(array));
+        history.replaceState({}, "", url);
+        return;
+    }
+
+    const resultQuery = urlParams.get(PARAMS.RESULT);
+    if (resultQuery) {
+        const input = decrypt(resultQuery);
+        console.log(input)
+        const array = inputToArray(input);
+        console.log(array);
+        displayResult(array)
+        return;
+    }
+    const editQuery = urlParams.get(PARAMS.EDIT);
+    const values = editQuery ? decrypt(editQuery) : DEFAULT_VALUE;
+    displayEdit(values);
 });
 
