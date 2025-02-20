@@ -2,6 +2,7 @@
 layout: post
 title: Leo P at the Proms
 category: Music
+excerpt: Amazing performance from Leo P at the Proms.
 ---
 
 [Uploaded to YouTube](https://www.youtube.com/watch?v=xU5-Pr8xJ-o) by [Xtela](https://www.instagram.com/xtela.10/) on 26

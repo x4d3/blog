@@ -2,6 +2,7 @@
 layout: post
 title: Did Inadequate Women’s Healthcare Destroy Star Wars’ Old Republic?
 category: Random
+excerpt: Why didn’t they just go to a goddamned obstetrician-gynecologist?
 ---
 
 Why didn’t they just go to a goddamned obstetrician-gynecologist?

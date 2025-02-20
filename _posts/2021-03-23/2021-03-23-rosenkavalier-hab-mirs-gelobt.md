@@ -3,8 +3,9 @@ layout: post
 title: >
   Der Rosenkavalier: "Hab mir's gelobt"
 slug: rosenkavalier-hab-mirs-gelobt
-tags:
+excerpt: Great excerpt from the Rosenkavalier opera.
 category: Music
+
 ---
 
 {% include youtube.html id="fi810zB3L04" %}

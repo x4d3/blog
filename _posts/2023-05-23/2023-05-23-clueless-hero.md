@@ -3,7 +3,6 @@ layout: post
 title: Clueless Hero
 category: Comics
 ---
-
 https://cluelesshero.com
 
 ![I can't wait to play](cant-wait-to-play.jpeg)

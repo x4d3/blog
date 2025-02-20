@@ -1,7 +1,18 @@
-<ul>
-    {%- for post in include.posts -%}
-    <li>
-        <a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
-    </li>
-    {%- endfor -%}
-</ul>
+
+{%- for post in include.posts -%}
+<article>
+    <h2><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h2>
+
+    <div class="row">
+        <div class="column">
+            <p>{{ post.excerpt }}</p>
+        </div>
+        <div class="column">
+            <img class="left-aligned" alt="A dog on an iPad" src="https://placecats.com/200/100" />
+
+        </div>
+    </div>
+
+</article>
+{%- endfor -%}
+
