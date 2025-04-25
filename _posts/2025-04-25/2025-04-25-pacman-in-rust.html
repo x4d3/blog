@@ -1,0 +1,29 @@
+---
+layout: post
+title: Pacman in Rust
+category: Music Dev Random Literature Video Games Comics Management
+---
+
+<p>
+    Little Pacman game implemented in Rust using <a href="https://macroquad.rs/">macroquad</a> and <a href="https://webassembly.org/">WebAssembly</a>
+</p>
+
+<a href="https://github.com/x4d3/rust-pacman">Source code</a>
+
+<style>
+    html,
+    body,
+    canvas {
+        margin: 0px;
+        padding: 0px;
+        width: 100%;
+        height: 100%;
+        background: black;
+        z-index: 0;
+    }
+</style>
+
+<canvas id="glcanvas" tabindex='1'></canvas>
+<!-- Minified and statically hosted version of https://github.com/not-fl3/miniquad/blob/master/native/sapp-wasm/js/gl.js -->
+<script src="gl.js"></script>
+<script>load("maze.wasm");</script> <!-- Your compiled wasm file -->
