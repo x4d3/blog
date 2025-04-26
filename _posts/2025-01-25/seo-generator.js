@@ -55,19 +55,20 @@ const generateXml = ({title, url, author, description, handle}) => {
         url && `<meta property="og:url" content="${url}" />`,
         previewUrl && `<meta property="twitter:image" content="${previewUrl}" />`,
         title && `<meta property="twitter:title" content="${title}" />`,
-        `<script type="application/ld+json">`,
-        title && description && url && `{
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "author": {
-                "@type": "Person",
-                "name": "${author}"
-            },
-            "description": "${description}",
-            "headline": "${title}",
-            "name": "${title}",
-            "url": "${url}"
-        }`
+        title && description && url && `<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "author": {
+        "@type": "Person",
+        "name": "${author}"
+    },
+    "description": "${description}",
+    "headline": "${title}",
+    "name": "${title}",
+    "url": "${url}"
+}
+</script>`,
     ];
     return xmlParts.filter(v => v).join("\n");
 }
