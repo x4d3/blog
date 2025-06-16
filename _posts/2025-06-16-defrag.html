@@ -1,0 +1,171 @@
+---
+layout: post
+title: Defrag
+category: Music Dev Random Literature Video Games Comics Management
+---
+<style>
+    body {
+        font-family: sans-serif;
+        text-align: center;
+        padding: 20px;
+    }
+
+    #status {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+
+    #progress-container {
+        width: 60%;
+        margin: 10px auto;
+        background: #eee;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    #progress-bar {
+        height: 20px;
+        width: 0%;
+        background: green;
+        transition: width 0.2s;
+    }
+
+    #score {
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    #disk {
+        display: grid;
+        grid-template-columns: repeat(20, 20px);
+        grid-gap: 2px;
+        justify-content: center;
+        margin: 20px auto;
+    }
+
+    .block {
+        width: 20px;
+        height: 20px;
+        background-color: lightgray;
+        border-radius: 3px;
+        transition: all 0.3s ease;
+    }
+
+    .used {
+        background-color: steelblue;
+    }
+
+    .free {
+        background-color: white;
+    }
+
+    .unhealthy {
+        background-color: red;
+    }
+
+    .moving {
+        background-color: orange !important;
+    }
+</style>
+
+
+<div id="status">Initializing...</div>
+
+<div id="progress-container">
+    <div id="progress-bar"></div>
+</div>
+<div id="disk"></div>
+
+<script>
+    const diskSize = 200;
+    let disk = [];
+
+    const diskContainer = document.getElementById("disk");
+    const status = document.getElementById("status");
+    const progressBar = document.getElementById("progress-bar");
+    const scoreDisplay = document.getElementById("score");
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function randomWait() {
+        await sleep(Math.random() * 30 + 5)
+    }
+
+    async function runCycle() {
+        // === Fragmenting ===
+        status.textContent = "Fragmenting...";
+        progressBar.style.width = "0%";
+        disk = [];
+        diskContainer.innerHTML = "";
+
+        for (let i = 0; i < diskSize; i++) {
+            const block = document.createElement("div");
+            block.classList.add("block");
+
+            const rand = Math.random();
+            if (rand < 0.55) {
+                block.classList.add("used");
+            } else if (rand < 0.57) {
+                block.classList.add("unhealthy");
+            } else {
+                block.classList.add("free");
+            }
+
+            disk.push(block);
+            diskContainer.appendChild(block);
+        }
+
+        await sleep(500); // Pause for visualization
+
+        // === Defragmenting ===
+        status.textContent = "Defragmenting...";
+        let usedBlocks = disk.filter(b => b.classList.contains("used"));
+        let healthyIndexes = disk.map((b, i) => (!b.classList.contains("unhealthy") ? i : null)).filter(i => i !== null);
+
+        let moveIndex = 0;
+        let totalMoves = usedBlocks.length;
+        let completedMoves = 0;
+
+        for (let block of usedBlocks) {
+            let currentIndex = disk.indexOf(block);
+            while (disk[moveIndex]?.classList.contains("unhealthy")) {
+                moveIndex++;
+            }
+            if (currentIndex !== moveIndex) {
+                let target = disk[moveIndex];
+
+                target.classList.remove("free");
+                await randomWait()
+                target.classList.add("moving");
+                await randomWait()
+                target.classList.remove("moving");
+                await randomWait()
+                target.classList.add("used");
+                await randomWait()
+                block.classList.remove("used");
+                await randomWait()
+                block.classList.add("free");
+                await randomWait()
+            }
+
+            completedMoves++;
+            progressBar.style.width = `${(completedMoves / totalMoves) * 100}%`;
+            moveIndex++;
+        }
+
+        // === Score ===
+        status.textContent = `Cycle complete. Restarting in 2s...`;
+        await sleep(2000);
+    }
+
+    async function startLoop() {
+        while (true) {
+            await runCycle();
+        }
+    }
+
+    startLoop();
+</script>
+
