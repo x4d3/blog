@@ -1,0 +1,132 @@
+---
+layout: post
+title: Breathing Square
+category: Random
+---
+
+<style>
+    .container {
+        margin: 0;
+        height: 60vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: sans-serif;
+    }
+
+    .square {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        border: 3px solid #333;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        background-color: #fff;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .timer {
+        font-size: 32px;
+        color: #555;
+    }
+
+    .progress {
+        position: absolute;
+        bottom: 10px;
+        height: 6px;
+        width: 90%;
+        background: #ddd;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-inner {
+        height: 100%;
+        background: #4caf50;
+        width: 0%;
+        transition: width 0.1s linear;
+    }
+
+    .face {
+        color: black;
+        position: absolute;
+        padding: 10px 20px;
+        background: #e0e0e0;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+
+    .highlight {
+        background: #4caf50;
+        color: white;
+    }
+
+    .top {
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .right {
+        right: -90px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .bottom {
+        bottom: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .left {
+        left: -90px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+</style>
+<div class="container">
+    <div class="square">
+        <div class="timer" id="timer">0.0s</div>
+        <div class="progress">
+            <div class="progress-inner" id="progress"></div>
+        </div>
+        <div id="face0" class="face left">Breathe In</div>
+        <div id="face1" class="face top">Keep</div>
+        <div id="face2" class="face right">Breathe Out</div>
+        <div id="face3" class="face bottom">Keep</div>
+    </div>
+</div>
+<script>
+    const faces = ["face0", "face1", "face2", "face3"]
+
+    let index = 0;
+    let elapsed = 0;
+    const interval = 4000;
+
+    function update() {
+        faces.forEach((face, i) => {
+            const el = document.getElementById(face);
+            el.classList.toggle('highlight', i === index);
+        });
+        index = (index + 1) % 4;
+    }
+
+    function updateTimer() {
+        elapsed += 100;
+        document.getElementById("timer").textContent = (elapsed / 1000).toFixed(1) + 's';
+        document.getElementById("progress").style.width = (elapsed / interval * 100) + '%';
+        if (elapsed >= interval) {
+            elapsed = 0;
+            update();
+        }
+    }
+
+    update();
+    setInterval(updateTimer, 100);
+</script>
