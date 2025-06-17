@@ -1,0 +1,114 @@
+---
+layout: post
+title: Hello Websockets
+category: Dev
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        #status {
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        #log {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 1rem;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        #controls {
+            margin-top: 1rem;
+        }
+
+        input[type="text"] {
+            padding: 0.5rem;
+            width: 60%;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            margin-left: 0.5rem;
+        }
+
+        .msg {
+            margin: 0.25rem 0;
+        }
+
+        .sent {
+            color: blue;
+        }
+
+        .received {
+            color: green;
+        }
+
+        .system {
+            color: gray;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div id="status">Status: <span id="conn-status">Connecting...</span></div>
+
+<div id="controls">
+    <input type="text" id="message" placeholder="Type a message..."/>
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<div id="log"></div>
+
+<script>
+    const log = document.getElementById("log");
+    const connStatus = document.getElementById("conn-status");
+
+    function logMessage(type, msg) {
+        const p = document.createElement("p");
+        p.className = `msg ${type}`;
+        const time = new Date().toLocaleTimeString();
+        p.textContent = `[${time}] ${msg}`;
+        log.appendChild(p);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    const ws = new WebSocket("wss://echo.websocket.events");
+
+    ws.onopen = () => {
+        connStatus.textContent = "Connected";
+        connStatus.style.color = "green";
+        logMessage("system", "WebSocket connection opened.");
+    };
+
+    ws.onmessage = (event) => {
+        logMessage("received", "Received: " + event.data);
+    };
+
+    ws.onclose = () => {
+        connStatus.textContent = "Disconnected";
+        connStatus.style.color = "red";
+        logMessage("system", "WebSocket connection closed. Reconnecting in 3s...");
+        setTimeout(setupWebSocket, 3000);
+    };
+
+    ws.onerror = (err) => {
+        logMessage("system", "Error: " + err.message);
+    };
+
+    function sendMessage() {
+        const msg = document.getElementById("message").value;
+        if (msg && ws.readyState === WebSocket.OPEN) {
+            ws.send(msg);
+            logMessage("sent", "Sent: " + msg);
+            document.getElementById("message").value = "";
+        } else {
+            logMessage("system", "Can't send message. WebSocket not open.");
+        }
+    }
+
+</script>
