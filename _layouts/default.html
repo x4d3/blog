@@ -5,23 +5,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ "/assets/css/simple.css" | relative_url }}">
-    <link rel="stylesheet" href="{{ "/assets/css/syntax.css" | relative_url }}">
     <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
+    <link rel="stylesheet" href="{{ "/assets/css/github-theme.css" | relative_url }}">
     <script src="{{"/assets/js/mermaid.min.js" | relative_url }}"></script>
+    <script src="{{"/assets/js/clipboard.js" | relative_url }}"></script>
+
     {% seo %}
 </head>
 <body>
     <header>
         <nav>
-            <a href="{{ "/" | relative_url }}">All</a>
+            <a class="{% if page.url == '/' %}current{% endif %}" href="{{ "/" | relative_url }}">All</a>
             {%- for category in site.categories -%}
-                <a href="{{ category | first | slugify | relative_url}}">{{ category | first }}</a>
+            {% assign main_category = category | first%}
+            <a class="{% if page.title == main_category %}current{% endif %}" href="{{ main_category | slugify | relative_url}}">{{ category | first }}</a>
             {% endfor -%}
         </nav>
     </header>
     <main>{{ content }}</main>
     <footer>
-        <a href="https://xade.eu/">xade.eu</a>
+        <a href="https://github.com/x4d3/blog/blob/main/{{ page.path }}">💻 Source</a>
     </footer>
 </body>
 </html>
