@@ -2,6 +2,8 @@
 layout: post
 title: Man Convinced Coffee Tastes Better After Making it in Much More Inconvenient Way
 category: Random
+description: TACOMA, Wash. — Local coffee aficionado Sage Davis claimed today that he finally perfected his method for brewing the perfect cup of coffee, and all it takes is an ungodly amount of time and effort, multiple sources confirm.
+
 ---
 
 Exported

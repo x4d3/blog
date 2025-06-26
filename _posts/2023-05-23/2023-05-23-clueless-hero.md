@@ -2,6 +2,8 @@
 layout: post
 title: Clueless Hero
 category: Comics
+description: Selected comics from cluelesshero.com
+
 ---
 
 https://cluelesshero.com

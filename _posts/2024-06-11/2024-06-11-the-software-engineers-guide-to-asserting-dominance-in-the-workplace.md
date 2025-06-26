@@ -3,6 +3,7 @@ layout: post
 title: The software engineer’s guide to asserting dominance in the workplace
 category: Dev
 image: git-force-push.png
+description: On your first day at the new job, squash every commit from the repo into a single commit with message "Legacy code" and force-push to master.
 ---
 
 [![On your first day at the new job, squash every commit from the repo into a single commit with message "Legacy code" and force-push to master.](git-force-push.png)](https://x.com/codeinthehole/status/1029682224713617408?lang=en)

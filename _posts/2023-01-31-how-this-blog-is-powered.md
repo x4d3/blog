@@ -2,6 +2,7 @@
 layout: post
 title: How this blog is powered
 category: Dev
+description: How this blog is built and deployed using Jekyll, GitHub Actions, and FTP, with automation scripts to streamline post creation.
 ---
 
 This blog is powered by [Jekyll](https://jekyllrb.com/), using github actions to publish to an FTP server.

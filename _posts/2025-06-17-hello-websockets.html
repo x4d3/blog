@@ -1,60 +1,55 @@
 ---
 layout: post
-title: Hello Websockets
+title: 🧦 Hello Websockets
 category: Dev
+description: Fun with Websockets
 ---
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <style>
-        #status {
-            font-weight: bold;
-            margin-bottom: 1rem;
-        }
+<style>
+    #status {
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
 
-        #log {
-            background: white;
-            border: 1px solid #ccc;
-            padding: 1rem;
-            height: 300px;
-            overflow-y: auto;
-            margin-top: 1rem;
-        }
+    #log {
+        background: white;
+        border: 1px solid #ccc;
+        padding: 1rem;
+        height: 300px;
+        overflow-y: auto;
+        margin-top: 1rem;
+    }
 
-        #controls {
-            margin-top: 1rem;
-        }
+    #controls {
+        margin-top: 1rem;
+    }
 
-        input[type="text"] {
-            padding: 0.5rem;
-            width: 60%;
-        }
+    input[type="text"] {
+        padding: 0.5rem;
+        width: 60%;
+    }
 
-        button {
-            padding: 0.5rem 1rem;
-            margin-left: 0.5rem;
-        }
+    button {
+        padding: 0.5rem 1rem;
+        margin-left: 0.5rem;
+    }
 
-        .msg {
-            margin: 0.25rem 0;
-        }
+    .msg {
+        margin: 0.25rem 0;
+    }
 
-        .sent {
-            color: blue;
-        }
+    .sent {
+        color: blue;
+    }
 
-        .received {
-            color: green;
-        }
+    .received {
+        color: green;
+    }
 
-        .system {
-            color: gray;
-            font-style: italic;
-        }
-    </style>
-</head>
-<body>
-
+    .system {
+        color: gray;
+        font-style: italic;
+    }
+</style>
 <div id="status">Status: <span id="conn-status">Connecting...</span></div>
 
 <div id="controls">

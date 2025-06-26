@@ -2,6 +2,7 @@
 layout: post
 title: "Romeo and Juliet: Entire Play"
 category: Literature
+description: "Two households, both alike in dignity" 
 ---
 
 ### ACT I

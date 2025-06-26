@@ -2,6 +2,7 @@
 layout: post
 title: My Favorite Classical Music Excerpts
 category: Music
+description: A personal archive of thrilling classical music excerpts, with scores and timestamps to my favorite moments.
 ---
 
 ## Holst, The Planets, 'Mars'

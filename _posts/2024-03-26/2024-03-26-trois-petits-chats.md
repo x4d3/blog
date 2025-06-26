@@ -2,6 +2,7 @@
 layout: post
 title: Trois petits chats
 category: Random
+description: Visual Display of the French song <a href="https://fr.wikipedia.org/wiki/Trois_Petits_Chats">&quot;Trois petits chats&quot;</a>
 ---
 
 Visual Display of the French song ["Trois petits chats"](https://fr.wikipedia.org/wiki/Trois_Petits_Chats)

@@ -2,6 +2,7 @@
 layout: post
 title: Tech Links
 category: Dev
+description: A curated list of technical articles, tools, and fun web curiosities worth bookmarking.
 ---
 
 - [How to write a good commit message](http://chris.beams.io/posts/git-commit/)

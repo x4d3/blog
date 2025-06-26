@@ -2,6 +2,7 @@
 layout: post
 title: Leo P at the Proms
 category: Music
+description: August 2017, amazing performance
 ---
 
 [Uploaded to YouTube](https://www.youtube.com/watch?v=xU5-Pr8xJ-o) by [Xtela](https://www.instagram.com/xtela.10/) on 26

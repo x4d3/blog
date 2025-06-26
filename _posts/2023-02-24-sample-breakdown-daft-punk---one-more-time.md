@@ -2,6 +2,7 @@
 layout: post
 title: "Sample Breakdown: Daft Punk - One More Time"
 category: Music
+description: Great description on how the sample is generated
 ---
 
 Uploaded to [YouTube](https://www.youtube.com/watch?v=5QwOpRh-IfI) by [Tracklib](https://www.youtube.com/@tracklib) on

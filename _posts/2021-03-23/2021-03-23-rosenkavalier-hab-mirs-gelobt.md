@@ -5,6 +5,7 @@ title: >
 slug: rosenkavalier-hab-mirs-gelobt
 tags:
 category: Music
+description: Amazing Trio
 ---
 
 {% include youtube.html id="fi810zB3L04" %}

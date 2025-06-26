@@ -2,6 +2,7 @@
 layout: post
 title: Romeo + Juliet Screenplay
 category: Literature
+description: Full screenplay of the movie
 ---
 
 Romeo + Juliet (1996) by William Shakespeare.

@@ -2,6 +2,7 @@
 layout: post
 title: Git Commit Message Guidelines
 category: Dev
+description: Guidelines and best practices for writing clear, consistent, and effective Git commit messages.
 ---
 
 ```

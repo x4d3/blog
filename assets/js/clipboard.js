@@ -1,5 +1,5 @@
 // Utility sleep function
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const _sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Fallback copy for browsers without Clipboard API
 const fallbackCopyTextToClipboard = (text) => {
@@ -52,7 +52,7 @@ const addCopyToClipboardOnButton = (button, getTextToCopy, copieText = "✅ Copi
         await copyTextToClipboard(getTextToCopy());
         const original = button.innerHTML;
         button.innerHTML = copieText;
-        await sleep(1000);
+        await _sleep(1000);
         button.innerHTML = original;
     };
 };
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await copyTextToClipboard(code.innerText);
                 copyIcon.style.display = 'none';
                 checkIcon.style.display = 'inline';
-                await sleep(1500);
+                await _sleep(1500);
                 copyIcon.style.display = 'inline';
                 checkIcon.style.display = 'none';
             } catch (err) {

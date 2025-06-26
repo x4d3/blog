@@ -1,7 +1,10 @@
-<ul>
-    {%- for post in include.posts -%}
-    <li>
-        <a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
-    </li>
-    {%- endfor -%}
-</ul>
+{%- for post in include.posts -%}
+
+<a href="{{ post.url | relative_url }}" class="notice-link">
+    <div class="notice">
+        <strong>{{ post.title | escape }}</strong>
+        <br>
+        {{ post.description }}
+    </div>
+</a>
+{%- endfor -%}

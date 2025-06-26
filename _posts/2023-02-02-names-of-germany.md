@@ -2,6 +2,7 @@
 layout: post
 title: Names of Germany
 category: Random
+description: There are so many names for Germany
 ---
 
 There are so many names for Germany:

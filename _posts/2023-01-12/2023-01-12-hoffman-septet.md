@@ -2,6 +2,7 @@
 layout: post
 title: "Contes d'Hoffman: Septet"
 category: Music
+description: I do like when everyone is singing at the same time.
 ---
 
 I do like when everyone is singing at the same time.

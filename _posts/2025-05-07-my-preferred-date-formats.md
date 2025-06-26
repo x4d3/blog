@@ -2,6 +2,7 @@
 layout: post
 title: My preferred date formats
 category: Dev
+description: A quick reference to my favorite date formats, with code examples across several programming languages.
 ---
 ## Formats
 - **Human-readable:** `dd mmm yyyy` → `17 Sep 1985`
