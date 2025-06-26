@@ -1,4 +1,5 @@
 ---
+emoji: 🎶
 layout: post
 title: "Contes d'Hoffman: Septet"
 category: Music

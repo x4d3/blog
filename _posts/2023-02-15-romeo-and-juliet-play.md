@@ -1,4 +1,5 @@
 ---
+emoji: 🎭
 layout: post
 title: "Romeo and Juliet: Entire Play"
 category: Literature

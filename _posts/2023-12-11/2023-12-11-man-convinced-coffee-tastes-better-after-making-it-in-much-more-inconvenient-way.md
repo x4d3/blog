@@ -1,4 +1,5 @@
 ---
+emoji: ☕
 layout: post
 title: Man Convinced Coffee Tastes Better After Making it in Much More Inconvenient Way
 category: Random

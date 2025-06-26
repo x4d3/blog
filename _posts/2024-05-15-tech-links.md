@@ -1,4 +1,5 @@
 ---
+emoji: 🔗
 layout: post
 title: Tech Links
 category: Dev

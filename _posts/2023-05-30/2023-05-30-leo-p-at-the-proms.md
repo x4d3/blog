@@ -1,4 +1,5 @@
 ---
+emoji: 🎷
 layout: post
 title: Leo P at the Proms
 category: Music

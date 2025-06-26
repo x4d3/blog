@@ -1,4 +1,5 @@
 ---
+emoji: 🥖
 layout: post
 title: Tell me you’re French without telling me you’re French
 category: Comics

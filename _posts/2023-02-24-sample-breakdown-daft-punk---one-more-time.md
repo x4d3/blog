@@ -1,4 +1,5 @@
 ---
+emoji: 🎧
 layout: post
 title: "Sample Breakdown: Daft Punk - One More Time"
 category: Music

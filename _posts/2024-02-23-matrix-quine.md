@@ -1,4 +1,5 @@
 ---
+emoji: 🧬
 layout: post
 title: Matrix Quine
 category: Dev

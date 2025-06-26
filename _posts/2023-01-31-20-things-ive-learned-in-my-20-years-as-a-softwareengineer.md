@@ -1,4 +1,5 @@
 ---
+emoji: 💡
 layout: post
 title: 20 Things I’ve Learned in my 20 Years as a Software Engineer
 category: Dev

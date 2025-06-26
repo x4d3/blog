@@ -1,4 +1,5 @@
 ---
+emoji: 🌍
 layout: post
 title: World Time Zones
 category: Random

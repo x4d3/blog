@@ -1,4 +1,5 @@
 ---
+emoji: 🎻
 layout: post
 title: >
   Der Rosenkavalier: "Hab mir's gelobt"

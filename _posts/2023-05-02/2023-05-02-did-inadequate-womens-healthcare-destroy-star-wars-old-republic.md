@@ -1,4 +1,5 @@
 ---
+emoji: 🌌
 layout: post
 title: Did Inadequate Women’s Healthcare Destroy Star Wars’ Old Republic?
 category: Random

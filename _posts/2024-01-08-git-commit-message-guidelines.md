@@ -1,4 +1,5 @@
 ---
+emoji: 📝
 layout: post
 title: Git Commit Message Guidelines
 category: Dev

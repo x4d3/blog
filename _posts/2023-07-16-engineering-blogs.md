@@ -1,4 +1,5 @@
 ---
+emoji: 🛠️
 layout: post
 title: Engineering Blogs
 category: Dev

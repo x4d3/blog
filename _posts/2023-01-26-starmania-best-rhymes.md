@@ -1,4 +1,5 @@
 ---
+emoji: 🎤
 layout: post
 title: Starmania - The best rhymes
 category: Music

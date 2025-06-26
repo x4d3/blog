@@ -1,4 +1,5 @@
 ---
+emoji: ⚙️
 layout: post
 title: How this blog is powered
 category: Dev

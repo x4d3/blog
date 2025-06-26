@@ -2,7 +2,7 @@
 
 <a href="{{ post.url | relative_url }}" class="notice-link">
     <div class="notice">
-        <strong>{{ post.title | escape }}</strong>
+        <strong>{{ post.emoji | default: "" }} {{ post.title | escape }}</strong>
         <br>
         {{ post.description }}
     </div>

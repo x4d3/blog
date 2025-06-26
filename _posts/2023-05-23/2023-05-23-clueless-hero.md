@@ -1,4 +1,5 @@
 ---
+emoji: 🦸
 layout: post
 title: Clueless Hero
 category: Comics

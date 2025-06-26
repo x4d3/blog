@@ -1,4 +1,5 @@
 ---
+emoji: 📅
 layout: post
 title: My preferred date formats
 category: Dev

@@ -1,4 +1,5 @@
 ---
+emoji: 🐱
 layout: post
 title: Trois petits chats
 category: Random

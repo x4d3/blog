@@ -1,4 +1,5 @@
 ---
+emoji: 🎼
 layout: post
 title: My Favorite Classical Music Excerpts
 category: Music

@@ -1,4 +1,5 @@
 ---
+emoji: 🇩🇪
 layout: post
 title: Names of Germany
 category: Random

@@ -1,4 +1,5 @@
 ---
+emoji: 📜
 layout: post
 title: Romeo + Juliet Screenplay
 category: Literature

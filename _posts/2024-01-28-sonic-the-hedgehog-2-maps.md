@@ -1,4 +1,5 @@
 ---
+emoji: 🦔
 layout: post
 title: Sonic the Hedgehog 2 Maps
 category: Video Games

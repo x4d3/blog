@@ -1,4 +1,5 @@
 ---
+emoji: 💼
 layout: post
 title: The software engineer’s guide to asserting dominance in the workplace
 category: Dev

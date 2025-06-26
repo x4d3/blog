@@ -5,6 +5,7 @@ require 'erb'
 require 'optparse'
 TEMPLATE = <<~EOS
   ---
+  emoji: 🧦
   layout: post
   title: <%= title %>
   category: Music Dev Random Literature Video Games Comics Management

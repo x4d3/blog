@@ -1,4 +1,5 @@
 ---
+emoji: 🎹
 layout: post
 title: Piano Samples
 subtitle: Piano samples found in modern music
