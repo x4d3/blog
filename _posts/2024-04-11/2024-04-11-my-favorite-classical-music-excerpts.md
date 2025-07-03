@@ -1,12 +1,14 @@
 ---
 emoji: 🎼
-layout: post
+layout: post_with_toc
 title: My Favorite Classical Music Excerpts
 category: Music
 description: A personal archive of thrilling classical music excerpts, with scores and timestamps to my favorite moments.
 ---
 
-## Holst, The Planets, 'Mars'
+## Gustav Holst
+
+### The Planets, 'Mars'
 
 7th bar of VII, The full brass ostinato, [at 4:06](https://youtu.be/cXOanvv4plU?si=Z3o5cSPQB421h6XH&t=246)
 
@@ -19,7 +21,9 @@ description: A personal archive of thrilling classical music excerpts, with scor
 
 </details>
 
-## Tchaikovsky, Symphony No.5, 1st movement
+## Pyotr Ilyich Tchaikovsky
+
+### Symphony No.5, 1st movement
 
 1st bar of Z, the full orchestra, [at 14:28](https://youtu.be/NeNeQrUXymg?si=gWhRmxWlxHUDUAQS&t=868)
 
@@ -31,7 +35,7 @@ description: A personal archive of thrilling classical music excerpts, with scor
 
 </details>
 
-## Tchaikovsky: Swan Lake Suite, Op. 20a - II. Valse
+### Swan Lake Suite, Op. 20a - II. Valse
 
 bar 20 of (19), the low brass, [at 6:17](https://youtu.be/hxAsJGflQCg?si=qEMtJv7bWSxhwNHe&t=377)
 
@@ -47,7 +51,9 @@ bar 20 of (19), the low brass, [at 6:17](https://youtu.be/hxAsJGflQCg?si=qEMtJv7
 
 </details>
 
-## Dukas, L'apprenti sorcier
+## Paul Dukas
+
+### L'apprenti sorcier
 
 bar 14 of (49), the Cornet Solo, [at 7:50](https://youtu.be/U4yH4B9deok?si=BKVdL1IfKJuLKNcP&t=470)
 
