@@ -11,10 +11,6 @@ description: Assign musical parts, fairly and fast.
         padding: 20px;
     }
 
-    .participant {
-        margin-bottom: 10px;
-    }
-
     .sortable-list {
         list-style: none;
         padding: 0;
@@ -97,7 +93,7 @@ description: Assign musical parts, fairly and fast.
     <li>Preferences are saved automatically when you make changes.</li>
 </ul>
 
-
+<p>
 <label for="items">Items</label>
 <textarea
         id="items" oninput="updateItemLists()" placeholder="One item per line"
@@ -107,12 +103,15 @@ Item 3
 Item 4
 Item 5
 Item 6</textarea>
+</p>
 
+<p>
 <label for="participants">Participants</label>
 <textarea id="participants" oninput="updateParticipants()" placeholder="One participant per line"
           rows=15>Person A
 Person B
 Person C</textarea>
+</p>
 <div id="sortingContainer"></div>
 
 <button onclick="assignParts()">Assign Parts</button>
@@ -278,7 +277,6 @@ Person C</textarea>
         )
         const state = {i: items, p: preferences}
         const json = JSON.stringify(state)
-        console.log(JSON.stringify(state, null, 2))
         const encrypted = encrypt(json);
 
         const url = new URL(window.location.href);
@@ -340,12 +338,10 @@ Person C</textarea>
     const serializedState = urlParams.get(STATE_PARAM);
     if (serializedState) {
         const state = JSON.parse(decrypt(serializedState))
-        console.log(state);
         const items = state.i;
         document.getElementById('items').value = state.i.join("\n");
         const entries = Object.entries(state.p).map(([k, v]) => [k, decodeIntToPermutation(BigInt(v), items.length)]);
         const participants = Object.fromEntries(entries)
-        console.log(participants);
         document.getElementById("participants").value = Object.keys(participants).join("\n")
         setParticipants(participants, items);
     } else {
