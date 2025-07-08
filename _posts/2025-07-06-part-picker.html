@@ -1,0 +1,335 @@
+---
+emoji: 🎼
+layout: post
+title:  Part Picker
+category: Random
+description: Assign musical parts, fairly and fast.
+---
+<script src="{{"/assets/js/lz-string.js" | relative_url }}"></script>
+<style>
+    body {
+        padding: 20px;
+    }
+
+    .participant {
+        margin-bottom: 10px;
+    }
+
+    .sortable-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border: 1px solid #ccc;
+        min-height: 100px;
+        width: 300px;
+    }
+
+    .sortable-list li {
+        padding: 5px 10px;
+        border-bottom: 1px solid #eee;
+        cursor: move;
+    }
+
+    .sortable-list li:last-child {
+        border-bottom: none;
+    }
+
+    .output {
+        margin-top: 20px;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        /*background-color: #f2f2f2;*/
+    }
+
+    button {
+        margin: 5px;
+    }
+</style>
+<h3>🤔 What This App Does</h3>
+<p>This app helps assign musical parts or roles to a group of people, based on their preferences. Each participant
+    can rank the items (like instruments or sections), and the app will try to assign everyone fairly without
+    repeats.</p>
+
+<h3>📝 How to Use</h3>
+<ol>
+    <li>Enter your list of items (e.g. instruments) in the <strong>Items</strong> box — one item per line.</li>
+    <li>Add participants using the <strong>"Add Participant"</strong> button.</li>
+    <li>For each participant:
+        <ul>
+            <li>Enter their name in the text field.</li>
+            <li>Drag and drop the items to rank their preferences (top = favorite).</li>
+        </ul>
+    </li>
+    <li>Click <strong>"Assign Parts"</strong> to run the assignment algorithm.</li>
+</ol>
+
+<hv>🔁 Shareable Link</hv>
+<p>The app saves everything in the URL, so you can bookmark it or share it with others. Just copy the address from
+    your browser once you’ve entered your data.</p>
+
+<h3>📌 Notes</h3>
+<ul>
+    <li>The algorithm tries to respect everyone's preferences as much as possible.</li>
+    <li>Each person gets assigned to a part only once per item.</li>
+    <li>Preferences are saved automatically when you make changes.</li>
+</ul>
+
+
+<label for="itemList">Items</label>
+<textarea
+        id="itemList" oninput="updateItemLists()" placeholder="One item per line"
+        rows=15>Item 1
+Item 2
+Item 3
+Item 4
+Item 5
+Item 6</textarea>
+
+<div id="participants"></div>
+<button onclick="addParticipant()">Add Participant</button>
+<button onclick="assignParts()">Assign Parts</button>
+
+<div class="output">
+    <h2>Assignments</h2>
+    <div id="result"></div>
+    <pre id="logs"></pre>
+</div>
+
+<script>
+    const STATE_PARAM = "s";
+
+    function encodePermutationToBigInt(perm) {
+        const n = perm.length;
+        const used = Array(n).fill(false);
+        let result = 0n;
+        let factorial = 1n;
+
+        for (let i = 1; i < n; i++) {
+            factorial *= BigInt(i);
+        }
+
+        for (let i = 0; i < n; i++) {
+            let count = 0;
+            for (let j = 0; j < perm[i]; j++) {
+                if (!used[j]) count++;
+            }
+            result += BigInt(count) * factorial;
+            used[perm[i]] = true;
+
+            if (n - 1 - i > 0) {
+                factorial /= BigInt(n - i - 1);
+            }
+        }
+
+        return result;
+    }
+
+    function decodeIntToPermutation(code, n) {
+        const elements = [...Array(n).keys()];
+        const result = [];
+        let factorial = 1n;
+
+        for (let i = 1; i < n; i++) {
+            factorial *= BigInt(i);
+        }
+
+        for (let i = 0; i < n; i++) {
+            const index = Number(code / factorial);
+            result.push(elements.splice(index, 1)[0]);
+            code %= factorial;
+            if (n - 1 - i > 0) {
+                factorial /= BigInt(n - 1 - i);
+            }
+        }
+
+        return result;
+    }
+
+    const decrypt = message => {
+        return LZString144.decompressFromEncodedURIComponent(message);
+    }
+
+    const encrypt = message => {
+        return LZString144.compressToEncodedURIComponent(message);
+    }
+
+    function addParticipant(name, permutations) {
+        const items = getItems();
+        _addParticipant(name, Array.from({length: items.length}, (_, i) => i));
+        saveState()
+
+    }
+
+    function _addParticipant(name, permutations) {
+        const container = document.createElement('div');
+        container.className = 'participant';
+        const items = getItems();
+
+        const listHtml = permutations.map(index => `<li draggable="true">${items[index]}</li>`).join('');
+
+        container.innerHTML = `
+        <input type="text" placeholder="Name" value="${name}"><br>
+        <ul class="sortable-list" ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)">${listHtml}</ul>
+        <button onclick="removeParticipant(this)">Remove</button>
+        `;
+        document.getElementById('participants').appendChild(container);
+    }
+
+    function removeParticipant(button) {
+        button.parentElement.remove();
+        saveState()
+    }
+
+    function getItems() {
+        const list = document.getElementById('itemList').value.trim().split('\n').map(x => x.trim()).filter(x => x);
+        list.sort();
+        return list;
+    }
+
+    function updateItemLists() {
+        document.querySelectorAll('.participant').forEach(p => {
+            const ul = p.querySelector('ul');
+            ul.innerHTML = getItems().map(item => `<li draggable="true">${item}</li>`).join('');
+        });
+        saveState();
+    }
+
+    let dragged;
+
+    function onDragStart(event) {
+        dragged = event.target;
+        event.dataTransfer.effectAllowed = 'move';
+    }
+
+    function onDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    }
+
+    function onDrop(event) {
+        event.preventDefault();
+        if (event.target.tagName === 'LI' && event.target !== dragged) {
+            const list = event.target.parentNode;
+            const nodes = Array.from(list.children);
+            const indexDragged = nodes.indexOf(dragged);
+            const indexTarget = nodes.indexOf(event.target);
+            if (indexDragged < indexTarget) {
+                list.insertBefore(dragged, event.target.nextSibling);
+            } else {
+                list.insertBefore(dragged, event.target);
+            }
+            saveState()
+        }
+    }
+
+    function getParticipantPreferences() {
+        const items = getItems();
+
+        const preferences = {};
+        const participants = document.querySelectorAll('.participant');
+        participants.forEach(p => {
+            const name = p.querySelector('input').value.trim();
+            const prefs = Array.from(p.querySelectorAll('ul li')).map(li => li.textContent.trim()).map(e => items.indexOf(e));
+            if (name && prefs.length) {
+                preferences[name] = prefs;
+            }
+        });
+        return preferences;
+    }
+
+    function saveState() {
+        const items = getItems();
+        const preferences = Object.fromEntries(
+            Object.entries(getParticipantPreferences())
+                .map(([key, value]) => [key, encodePermutationToBigInt(value).toString()])
+        )
+        const state = {i: items, p: preferences}
+        const json = JSON.stringify(state)
+        console.log(JSON.stringify(state, null, 2))
+        const encrypted = encrypt(json);
+
+        const url = new URL(window.location.href);
+        url.searchParams.set(STATE_PARAM, encrypted);
+        history.replaceState({}, "", url.toString());
+
+    }
+
+    function assignParts() {
+        const preferences = getParticipantPreferences();
+        const names = Object.keys(preferences);
+        const items = getItems();
+        const n = names.length;
+        const m = items.length;
+        const roles = Array.from({length: m}, () => Array(n).fill(null));
+
+        let order = [...Array(n).keys()];
+        const logs = []
+
+        let assignmentsNeeded = m * n;
+        while (assignmentsNeeded > 0) {
+            for (let round = 0; round < 2; round++) {
+                if (round % 2 !== 0) order.reverse();
+
+                for (let pi of order) {
+                    const person = names[pi];
+                    let assigned = false;
+                    for (let role = 0; role < n; role++) {
+                        for (let itemIndex of preferences[person]) {
+                            if (roles[itemIndex].slice(0, role).some(r => r === person)) {
+                                continue
+                            }
+                            if (!roles[itemIndex][role]) {
+                                logs.push(`${person} pick ${items[itemIndex]} for Part ${role + 1}`)
+                                roles[itemIndex][role] = person;
+                                assignmentsNeeded--;
+                                assigned = true;
+                                break;
+                            }
+                        }
+                        if (assigned) break;
+                    }
+                }
+            }
+        }
+
+        let html = '<table><tr><th>Item</th>' + [...Array(n).keys()].map(i => `<th>Part ${i + 1}</th>`).join('') + '</tr>';
+        for (let i = 0; i < items.length; i++) {
+            html += `<tr><td>${items[i]}</td>` + roles[i].map(p => `<td>${p || ''}</td>`).join('') + '</tr>';
+        }
+        html += '</table>';
+
+        document.getElementById('result').innerHTML = html;
+        document.getElementById('logs').innerHTML = logs.join("\n");
+
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const serializedState = urlParams.get(STATE_PARAM);
+    if (serializedState) {
+        const state = JSON.parse(decrypt(serializedState))
+        const items = state.i;
+        document.getElementById('itemList').value = state.i.join("\n");
+        Object.entries(state.p).map(([k, v]) => {
+            _addParticipant(k, decodeIntToPermutation(BigInt(v), items.length))
+        })
+    } else {
+        _addParticipant('Alex');
+        _addParticipant('Jean');
+        _addParticipant('Bruno');
+        saveState()
+    }
+
+</script>
