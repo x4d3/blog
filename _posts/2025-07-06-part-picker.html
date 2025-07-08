@@ -54,6 +54,11 @@ description: Assign musical parts, fairly and fast.
         white-space: pre-wrap
     }
 
+    li.dragging {
+        opacity: 0.6;
+        background: rgb(47, 129, 247);
+        border-radius: 4px;
+    }
     button {
         margin: 5px;
     }
@@ -199,18 +204,94 @@ Person C</textarea>
         const sortingContainer = document.getElementById('sortingContainer');
         sortingContainer.innerHTML = "";
         for (const [name, permutations] of Object.entries(participants)) {
-            const listHtml = permutations.map(index => `<li draggable="true">${items[index]}</li>`).join('');
+            const listHtml = permutations.map(index => `<li>${items[index]}</li>`).join('');
             const container = document.createElement('div');
             container.className = 'participant';
             container.innerHTML = `
             <h4>${name}</h4>
-            <ul class="sortable-list" ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)">${listHtml}</ul>
+            <ul class="sortable-list">${listHtml}</ul>
             `;
+            enableReordering(container)
             sortingContainer.appendChild(container);
 
         }
     }
+    function enableReordering(container) {
+        let dragged = null;
+        let startY = null;
 
+        const handleMouseDown = (e) => {
+            dragged = e.target;
+            dragged.classList.add('dragging');
+        };
+
+        const handleMouseUp = () => {
+            if (dragged) dragged.classList.remove('dragging');
+            dragged = null;
+            saveState();
+        };
+
+        const handleMouseMove = (e) => {
+            if (!dragged) return;
+
+            const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
+            const target = elementUnder?.closest('li');
+            if (target && target !== dragged && target.parentElement === dragged.parentElement) {
+                const list = target.parentElement;
+                const nodes = Array.from(list.children);
+                const indexDragged = nodes.indexOf(dragged);
+                const indexTarget = nodes.indexOf(target);
+                if (indexDragged < indexTarget) {
+                    list.insertBefore(dragged, target.nextSibling);
+                } else {
+                    list.insertBefore(dragged, target);
+                }
+            }
+        };
+
+        const handleTouchStart = (e) => {
+            dragged = e.target;
+            startY = e.touches[0].clientY;
+            dragged.classList.add('dragging');
+        };
+
+        const handleTouchMove = (e) => {
+            if (!dragged) return;
+            e.preventDefault();
+
+            const touch = e.touches[0];
+            const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+            const target = elementUnder?.closest('li');
+            if (target && target !== dragged && target.parentElement === dragged.parentElement) {
+                const list = target.parentElement;
+                const nodes = Array.from(list.children);
+                const indexDragged = nodes.indexOf(dragged);
+                const indexTarget = nodes.indexOf(target);
+                if (indexDragged < indexTarget) {
+                    list.insertBefore(dragged, target.nextSibling);
+                } else {
+                    list.insertBefore(dragged, target);
+                }
+            }
+        };
+
+        const handleTouchEnd = () => {
+            if (dragged) dragged.classList.remove('dragging');
+            dragged = null;
+            saveState();
+        };
+
+        container.querySelectorAll('li').forEach(li => {
+            li.style.touchAction = 'none';  // Prevent scrolling while sorting
+            li.style.userSelect = 'none';   // Prevent accidental text selection
+            li.addEventListener('mousedown', handleMouseDown);
+            li.addEventListener('mouseup', handleMouseUp);
+            li.addEventListener('mousemove', handleMouseMove);
+            li.addEventListener('touchstart', handleTouchStart, { passive: false });
+            li.addEventListener('touchmove', handleTouchMove, { passive: false });
+            li.addEventListener('touchend', handleTouchEnd);
+        });
+    }
     function getItems() {
         const list = document.getElementById('items').value.trim().split('\n').map(x => x.trim()).filter(x => x);
         list.sort();
