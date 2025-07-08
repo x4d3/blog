@@ -50,8 +50,13 @@ description: Assign musical parts, fairly and fast.
         text-align: left;
     }
 
-    th {
-        /*background-color: #f2f2f2;*/
+    .urlContainer {
+        background-color: white;
+    }
+
+    #url {
+        font-size: small;
+        white-space: pre-wrap
     }
 
     button {
@@ -76,10 +81,15 @@ description: Assign musical parts, fairly and fast.
     <li>Click <strong>"Assign Parts"</strong> to run the assignment algorithm.</li>
 </ol>
 
-<hv>🔁 Shareable Link</hv>
+<h3>🔁 Shareable Link</h3>
 <p>The app saves everything in the URL, so you can bookmark it or share it with others. Just copy the address from
-    your browser once you’ve entered your data.</p>
-
+    your browser once you’ve entered your data.
+</p>
+<p>
+    Or you can copy the url here:
+<div class="urlContainer"><code id="url"></code>
+</div>
+</p>
 <h3>📌 Notes</h3>
 <ul>
     <li>The algorithm tries to respect everyone's preferences as much as possible.</li>
@@ -88,9 +98,9 @@ description: Assign musical parts, fairly and fast.
 </ul>
 
 
-<label for="itemList">Items</label>
+<label for="items">Items</label>
 <textarea
-        id="itemList" oninput="updateItemLists()" placeholder="One item per line"
+        id="items" oninput="updateItemLists()" placeholder="One item per line"
         rows=15>Item 1
 Item 2
 Item 3
@@ -98,8 +108,13 @@ Item 4
 Item 5
 Item 6</textarea>
 
-<div id="participants"></div>
-<button onclick="addParticipant()">Add Participant</button>
+<label for="participants">Participants</label>
+<textarea id="participants" oninput="updateParticipants()" placeholder="One participant per line"
+          rows=15>Person A
+Person B
+Person C</textarea>
+<div id="sortingContainer"></div>
+
 <button onclick="assignParts()">Assign Parts</button>
 
 <div class="output">
@@ -110,6 +125,9 @@ Item 6</textarea>
 
 <script>
     const STATE_PARAM = "s";
+    const urlContainer = document.getElementById("url");
+    addCopyToClipboardIcon(urlContainer.parentElement, () => urlContainer.innerText);
+    urlContainer.innerText = window.location.href
 
     function encodePermutationToBigInt(perm) {
         const n = perm.length;
@@ -166,43 +184,45 @@ Item 6</textarea>
         return LZString144.compressToEncodedURIComponent(message);
     }
 
-    function addParticipant(name, permutations) {
-        const items = getItems();
-        _addParticipant(name, Array.from({length: items.length}, (_, i) => i));
-        saveState()
-
+    function getParticipants() {
+        return document.getElementById("participants").value.trim().split('\n').map(x => x.trim()).filter(x => x);
     }
 
-    function _addParticipant(name, permutations) {
-        const container = document.createElement('div');
-        container.className = 'participant';
+    function updateParticipants() {
         const items = getItems();
-
-        const listHtml = permutations.map(index => `<li draggable="true">${items[index]}</li>`).join('');
-
-        container.innerHTML = `
-        <input type="text" placeholder="Name" value="${name}"><br>
-        <ul class="sortable-list" ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)">${listHtml}</ul>
-        <button onclick="removeParticipant(this)">Remove</button>
-        `;
-        document.getElementById('participants').appendChild(container);
+        const n = items.length
+        const entries = getParticipants().map(name => [name, [...Array(n).keys()]])
+        setParticipants(Object.fromEntries(entries), items);
+        saveState();
     }
 
-    function removeParticipant(button) {
-        button.parentElement.remove();
-        saveState()
+    function setParticipants(participants, items) {
+        const sortingContainer = document.getElementById('sortingContainer');
+        sortingContainer.innerHTML = "";
+        for (const [name, permutations] of Object.entries(participants)) {
+            const listHtml = permutations.map(index => `<li draggable="true">${items[index]}</li>`).join('');
+            const container = document.createElement('div');
+            container.className = 'participant';
+            container.innerHTML = `
+            <h4>${name}</h4>
+            <ul class="sortable-list" ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)">${listHtml}</ul>
+            `;
+            sortingContainer.appendChild(container);
+
+        }
     }
 
     function getItems() {
-        const list = document.getElementById('itemList').value.trim().split('\n').map(x => x.trim()).filter(x => x);
+        const list = document.getElementById('items').value.trim().split('\n').map(x => x.trim()).filter(x => x);
         list.sort();
         return list;
     }
 
     function updateItemLists() {
+        const items = getItems();
         document.querySelectorAll('.participant').forEach(p => {
             const ul = p.querySelector('ul');
-            ul.innerHTML = getItems().map(item => `<li draggable="true">${item}</li>`).join('');
+            ul.innerHTML = items.map(item => `<li draggable="true">${item}</li>`).join('');
         });
         saveState();
     }
@@ -241,7 +261,7 @@ Item 6</textarea>
         const preferences = {};
         const participants = document.querySelectorAll('.participant');
         participants.forEach(p => {
-            const name = p.querySelector('input').value.trim();
+            const name = p.querySelector('h4').innerText.trim();
             const prefs = Array.from(p.querySelectorAll('ul li')).map(li => li.textContent.trim()).map(e => items.indexOf(e));
             if (name && prefs.length) {
                 preferences[name] = prefs;
@@ -264,7 +284,7 @@ Item 6</textarea>
         const url = new URL(window.location.href);
         url.searchParams.set(STATE_PARAM, encrypted);
         history.replaceState({}, "", url.toString());
-
+        urlContainer.innerText = url;
     }
 
     function assignParts() {
@@ -320,16 +340,18 @@ Item 6</textarea>
     const serializedState = urlParams.get(STATE_PARAM);
     if (serializedState) {
         const state = JSON.parse(decrypt(serializedState))
+        console.log(state);
         const items = state.i;
-        document.getElementById('itemList').value = state.i.join("\n");
-        Object.entries(state.p).map(([k, v]) => {
-            _addParticipant(k, decodeIntToPermutation(BigInt(v), items.length))
-        })
+        document.getElementById('items').value = state.i.join("\n");
+        const entries = Object.entries(state.p).map(([k, v]) => [k, decodeIntToPermutation(BigInt(v), items.length)]);
+        const participants = Object.fromEntries(entries)
+        console.log(participants);
+        document.getElementById("participants").value = Object.keys(participants).join("\n")
+        setParticipants(participants, items);
     } else {
-        _addParticipant('Alex');
-        _addParticipant('Jean');
-        _addParticipant('Bruno');
+        updateParticipants();
         saveState()
     }
+
 
 </script>

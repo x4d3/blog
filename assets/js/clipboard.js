@@ -61,29 +61,33 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.highlighter-rouge').forEach((shell) => {
         const code = shell.querySelector('code');
         if (!code) return;
+        addCopyToClipboardIcon(shell, ()=> code.innerText)
+    });
+});
 
-        shell.style.position = 'relative';
+const addCopyToClipboardIcon = (shell, getTextToCopy) =>{
+    shell.style.position = 'relative';
 
-        const clipboard = document.createElement('div');
-        clipboard.setAttribute('role', 'button');
-        clipboard.setAttribute('tabindex', '0');
-        clipboard.setAttribute('aria-label', 'Copy');
-        clipboard.className = 'ClipboardButton btn btn-invisible js-clipboard-copy m-2 p-0 tooltipped-no-delay d-flex flex-justify-center flex-items-center';
-        clipboard.setAttribute('data-copy-feedback', 'Copied!');
-        clipboard.setAttribute('data-tooltip-direction', 'w');
+    const clipboard = document.createElement('div');
+    clipboard.setAttribute('role', 'button');
+    clipboard.setAttribute('tabindex', '0');
+    clipboard.setAttribute('aria-label', 'Copy');
+    clipboard.className = 'ClipboardButton btn btn-invisible js-clipboard-copy m-2 p-0 tooltipped-no-delay d-flex flex-justify-center flex-items-center';
+    clipboard.setAttribute('data-copy-feedback', 'Copied!');
+    clipboard.setAttribute('data-tooltip-direction', 'w');
 
-        Object.assign(clipboard.style, {
-            position: 'absolute',
-            top: '0.5em',
-            right: '0.5em',
-            cursor: 'pointer',
-            zIndex: '10',
-            background: 'transparent',
-            border: 'none',
-            padding: '0',
-        });
+    Object.assign(clipboard.style, {
+        position: 'absolute',
+        top: '0.5em',
+        right: '0.5em',
+        cursor: 'pointer',
+        zIndex: '10',
+        background: 'transparent',
+        border: 'none',
+        padding: '0',
+    });
 
-        clipboard.innerHTML = `
+    clipboard.innerHTML = `
           <svg
             aria-hidden="true"
             height="16"
@@ -122,21 +126,21 @@ document.addEventListener('DOMContentLoaded', () => {
           </svg>
         `;
 
-        clipboard.addEventListener('click', async () => {
-            try {
-                const copyIcon = clipboard.querySelector('.js-clipboard-copy-icon');
-                const checkIcon = clipboard.querySelector('.js-clipboard-check-icon');
-                await copyTextToClipboard(code.innerText);
-                copyIcon.style.display = 'none';
-                checkIcon.style.display = 'inline';
-                await _sleep(1500);
-                copyIcon.style.display = 'inline';
-                checkIcon.style.display = 'none';
-            } catch (err) {
-                console.error("Copy failed", err);
-            }
-        });
-
-        shell.appendChild(clipboard);
+    clipboard.addEventListener('click', async () => {
+        try {
+            const copyIcon = clipboard.querySelector('.js-clipboard-copy-icon');
+            const checkIcon = clipboard.querySelector('.js-clipboard-check-icon');
+            const text = getTextToCopy()
+            await copyTextToClipboard(text);
+            copyIcon.style.display = 'none';
+            checkIcon.style.display = 'inline';
+            await _sleep(1500);
+            copyIcon.style.display = 'inline';
+            checkIcon.style.display = 'none';
+        } catch (err) {
+            console.error("Copy failed", err);
+        }
     });
-});
+
+    shell.appendChild(clipboard);
+}
