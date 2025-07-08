@@ -15,4 +15,3 @@ description: A curated list of technical articles, tools, and fun web curiositie
 - [Learn Rust With Entirely Too Many Linked Lists](https://rust-unofficial.github.io/too-many-lists/)
 - [What color is your function?](https://journal.stuffwithstuff.com/2015/02/01/what-color-is-your-function/)
 - [roadmap.sh: community effort to help guide developers in their learnings](https://roadmap.sh/)
-

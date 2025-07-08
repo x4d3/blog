@@ -5,13 +5,16 @@ title: My preferred date formats
 category: Dev
 description: A quick reference to my favorite date formats, with code examples across several programming languages.
 ---
+
 ## Formats
+
 - **Human-readable:** `dd mmm yyyy` → `17 Sep 1985`
 - **File-friendly:** `yyyy-mm-dd` → `1985-09-17`
 
 ---
 
 ## 🐍 Python
+
 ```python
 from datetime import datetime
 date = datetime(1985, 9, 17)
@@ -23,19 +26,21 @@ print("File-friendly:", date.strftime("%Y-%m-%d"))   # 1985-09-17
 ---
 
 ## 🌐 JavaScript
+
 ```javascript
 const date = new Date(1985, 8, 17); // Months are 0-indexed
 
-const options = { day: '2-digit', month: 'short', year: 'numeric' };
-console.log("Human-readable:", date.toLocaleDateString('en-GB', options)); // 17 Sep 1985
+const options = { day: "2-digit", month: "short", year: "numeric" };
+console.log("Human-readable:", date.toLocaleDateString("en-GB", options)); // 17 Sep 1985
 
-const fileFriendly = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+const fileFriendly = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 console.log("File-friendly:", fileFriendly); // 1985-09-17
 ```
 
 ---
 
 ## 🦀 Rust
+
 ```rust
 use chrono::NaiveDate;
 
@@ -50,6 +55,7 @@ fn main() {
 ---
 
 ## 💎 Ruby
+
 ```ruby
 require 'date'
 date = Date.new(1985, 9, 17)
@@ -61,6 +67,7 @@ puts "File-friendly: #{date.strftime("%Y-%m-%d")}"   # 1985-09-17
 ---
 
 ## 🐹 Go
+
 ```go
 package main
 import (
@@ -79,6 +86,7 @@ func main() {
 ---
 
 ## ☕ Java
+
 ```java
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -95,5 +103,3 @@ public class Main {
     }
 }
 ```
-
-
