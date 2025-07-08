@@ -62,7 +62,8 @@ description: Assign musical parts, fairly and fast.
 <h3>🤔 What This App Does</h3>
 <p>This app helps assign musical parts or roles to a group of people, based on their preferences. Each participant
     can rank the items (like instruments or sections), and the app will try to assign everyone fairly without
-    repeats.</p>
+    repeats.
+</p>
 
 <h3>📝 How to Use</h3>
 <ol>
@@ -81,11 +82,11 @@ description: Assign musical parts, fairly and fast.
 <p>The app saves everything in the URL, so you can bookmark it or share it with others. Just copy the address from
     your browser once you’ve entered your data.
 </p>
-<p>
-    Or you can copy the url here:
-<div class="urlContainer"><code id="url"></code>
+<div>Or you can copy the url here:
+    <div class="urlContainer">
+        <code id="url"></code>
+    </div>
 </div>
-</p>
 <h3>📌 Notes</h3>
 <ul>
     <li>The algorithm tries to respect everyone's preferences as much as possible.</li>
@@ -94,10 +95,10 @@ description: Assign musical parts, fairly and fast.
 </ul>
 
 <p>
-<label for="items">Items</label>
-<textarea
-        id="items" oninput="updateItemLists()" placeholder="One item per line"
-        rows=15>Item 1
+    <label for="items">Items</label>
+    <textarea
+            id="items" oninput="updateItemLists()" placeholder="One item per line"
+            rows=15>Item 1
 Item 2
 Item 3
 Item 4
@@ -106,9 +107,9 @@ Item 6</textarea>
 </p>
 
 <p>
-<label for="participants">Participants</label>
-<textarea id="participants" oninput="updateParticipants()" placeholder="One participant per line"
-          rows=15>Person A
+    <label for="participants">Participants</label>
+    <textarea id="participants" oninput="updateParticipants()" placeholder="One participant per line"
+              rows=15>Person A
 Person B
 Person C</textarea>
 </p>
