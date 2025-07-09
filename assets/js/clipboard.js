@@ -38,7 +38,6 @@ const copyTextToClipboard = async (text) => {
 
     try {
         await navigator.clipboard.writeText(text);
-        console.log("Async: Copying to clipboard was successful!");
     } catch (err) {
         console.error("Async: Could not copy text: ", err);
         return fallbackCopyTextToClipboard(text);

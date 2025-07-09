@@ -51,7 +51,8 @@ description: Assign musical parts, fairly and fast.
 
     #url {
         font-size: small;
-        white-space: pre-wrap
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
     }
 
     li.dragging {
@@ -59,8 +60,10 @@ description: Assign musical parts, fairly and fast.
         background: rgb(47, 129, 247);
         border-radius: 4px;
     }
+
     button {
-        margin: 5px;
+        margin-top: 30px;
+        width: 100%;
     }
 </style>
 <h3>🤔 What This App Does</h3>
@@ -122,9 +125,7 @@ Person C</textarea>
 <button onclick="assignParts()">Assign Parts</button>
 
 <div class="output">
-    <h2>Assignments</h2>
     <div id="result"></div>
-    <pre id="logs"></pre>
 </div>
 
 <script>
@@ -213,9 +214,9 @@ Person C</textarea>
             `;
             enableReordering(container)
             sortingContainer.appendChild(container);
-
         }
     }
+
     function enableReordering(container) {
         let dragged = null;
         let startY = null;
@@ -280,18 +281,18 @@ Person C</textarea>
             dragged = null;
             saveState();
         };
-
         container.querySelectorAll('li').forEach(li => {
             li.style.touchAction = 'none';  // Prevent scrolling while sorting
             li.style.userSelect = 'none';   // Prevent accidental text selection
             li.addEventListener('mousedown', handleMouseDown);
             li.addEventListener('mouseup', handleMouseUp);
             li.addEventListener('mousemove', handleMouseMove);
-            li.addEventListener('touchstart', handleTouchStart, { passive: false });
-            li.addEventListener('touchmove', handleTouchMove, { passive: false });
+            li.addEventListener('touchstart', handleTouchStart, {passive: false});
+            li.addEventListener('touchmove', handleTouchMove, {passive: false});
             li.addEventListener('touchend', handleTouchEnd);
         });
     }
+
     function getItems() {
         const list = document.getElementById('items').value.trim().split('\n').map(x => x.trim()).filter(x => x);
         list.sort();
@@ -299,11 +300,7 @@ Person C</textarea>
     }
 
     function updateItemLists() {
-        const items = getItems();
-        document.querySelectorAll('.participant').forEach(p => {
-            const ul = p.querySelector('ul');
-            ul.innerHTML = items.map(item => `<li draggable="true">${item}</li>`).join('');
-        });
+        updateParticipants();
         saveState();
     }
 
@@ -403,16 +400,18 @@ Person C</textarea>
                 }
             }
         }
-
-        let html = '<table><tr><th>Item</th>' + [...Array(n).keys()].map(i => `<th>Part ${i + 1}</th>`).join('') + '</tr>';
+        let html = '<h2>Assignments</h2>'
+        html += '<table><tr><th>Item</th>' + [...Array(n).keys()].map(i => `<th>Part ${i + 1}</th>`).join('') + '</tr>';
         for (let i = 0; i < items.length; i++) {
             html += `<tr><td>${items[i]}</td>` + roles[i].map(p => `<td>${p || ''}</td>`).join('') + '</tr>';
         }
         html += '</table>';
+        html += '<h3>Logs</h3>';
+
+        const logsHtml = logs.map(l => `<li>${l}</li>`).join("")
+        html += `<ul>${logsHtml}</ul>`;
 
         document.getElementById('result').innerHTML = html;
-        document.getElementById('logs').innerHTML = logs.join("\n");
-
     }
 
     const urlParams = new URLSearchParams(window.location.search);
