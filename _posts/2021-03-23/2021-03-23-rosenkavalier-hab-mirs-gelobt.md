@@ -4,9 +4,8 @@ layout: post
 title: >
   Der Rosenkavalier: "Hab mir's gelobt"
 slug: rosenkavalier-hab-mirs-gelobt
-tags:
 category: Music
-description: Amazing Trio
+description: Amazing Trio.
 ---
 
 {% include youtube.html id="fi810zB3L04" %}

@@ -2,7 +2,6 @@
 emoji: 🎹
 layout: post
 title: Piano Samples
-subtitle: Piano samples found in modern music
 category: Music
 description: A collection of piano-driven tracks that sample or reinterpret classical pieces, bridging modern music and timeless compositions.
 ---

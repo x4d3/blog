@@ -3,7 +3,7 @@ emoji: 🛠️
 layout: post
 title: Engineering Blogs
 category: Dev
-description: List of great engineering blogs
+description: List of great engineering blogs.
 ---
 
 - [Engineering at Meta](https://engineering.fb.com/)

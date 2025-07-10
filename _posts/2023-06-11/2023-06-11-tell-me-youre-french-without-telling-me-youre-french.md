@@ -3,7 +3,7 @@ emoji: 🥖
 layout: post
 title: Tell me you’re French without telling me you’re French
 category: Comics
-description: Comics from Clémentine Latron
+description: Comics from Clémentine Latron.
 ---
 
 Comics from [Clémentine Latron](https://www.clementinelatron.com/)
