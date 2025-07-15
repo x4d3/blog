@@ -1,0 +1,147 @@
+---
+emoji: 🔑
+layout: post
+title: AES Encryption
+category: Dev
+description: A simple browser-based tool for encrypting and decrypting text using AES-256-GCM with password-based key derivation, all done locally and securely.
+---
+<style>
+    body {
+        font-family: system-ui, sans-serif;
+        max-width: 740px;
+        margin: 2rem auto;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 8rem;
+        margin-bottom: 1rem;
+    }
+
+    input[type=password] {
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    button {
+        padding: 0.6rem 1.2rem;
+        margin-right: 0.5rem;
+        cursor: pointer;
+    }
+
+    .hint {
+        font-size: 0.85rem;
+        color: #555;
+        margin-top: 0.5rem;
+    }
+</style>
+
+
+<label for="pwd">Password</label>
+<input id="pwd" type="password" placeholder="Enter password…"/>
+
+<label for="clear">Clear Text</label>
+<textarea id="clear" placeholder="Type plaintext here…"></textarea>
+
+<label for="cipher">Encrypted Text (Base64)</label>
+<textarea id="cipher" placeholder="Ciphertext will appear here…"></textarea>
+
+
+<button id="btnEncrypt">Encrypt ⟶</button>
+<button id="btnDecrypt">⟵ Decrypt</button>
+
+<div id="errorBox" style="color: red; margin-top: 1rem;display: none;"></div>
+
+<p class="hint">
+    Implementation: PBKDF2 (100 000 iter, SHA-256) → AES-256-GCM (128-bit IV).
+    The encrypted output bundles <code>[salt || iv || ciphertext]</code> and is Base64-encoded.
+</p>
+
+<script>
+    const enc = new TextEncoder();
+    const dec = new TextDecoder();
+
+    const errorBox = document.getElementById("errorBox");
+
+    function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.style.display = "block";
+
+    }
+
+    function clearError() {
+        errorBox.textContent = ""
+        errorBox.style.display = "none";
+    }
+
+    function bufToB64(buf) {
+        return btoa(String.fromCharCode(...new Uint8Array(buf)));
+    }
+
+    function b64ToBuf(b64) {
+        return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    }
+
+    async function deriveKey(password, salt, usage) {
+        const pwKey = await crypto.subtle.importKey(
+            "raw", enc.encode(password), {name: "PBKDF2"}, false, ["deriveKey"]
+        );
+        return crypto.subtle.deriveKey(
+            {name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256"},
+            pwKey, {name: "AES-GCM", length: 256}, false, usage
+        );
+    }
+
+    async function encrypt() {
+        clearError();
+        const message = document.getElementById("clear").value;
+        const password = document.getElementById("pwd").value;
+        if (!message) return showError("Nothing to encrypt.");
+        if (!password) return showError("Enter a password.");
+
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const key = await deriveKey(password, salt, ["encrypt"]);
+
+        const cipherBuf = await crypto.subtle.encrypt(
+            {name: "AES-GCM", iv}, key, enc.encode(message)
+        );
+
+        const combined = new Uint8Array(salt.byteLength + iv.byteLength + cipherBuf.byteLength);
+        combined.set(salt, 0);
+        combined.set(iv, salt.byteLength);
+        combined.set(new Uint8Array(cipherBuf), salt.byteLength + iv.byteLength);
+
+        document.getElementById("cipher").value = bufToB64(combined.buffer);
+    }
+
+    async function decrypt() {
+        clearError();
+        try {
+            const b64 = document.getElementById("cipher").value.trim();
+            const password = document.getElementById("pwd").value;
+            if (!b64) return showError("No ciphertext to decrypt.");
+            if (!password) return showError("Enter the password used for encryption.");
+
+            const combined = b64ToBuf(b64);
+            if (combined.length < 28) return showError("Ciphertext is too short or malformed.");
+
+            const salt = combined.slice(0, 16);
+            const iv = combined.slice(16, 28);
+            const data = combined.slice(28);
+
+            const key = await deriveKey(password, salt, ["decrypt"]);
+
+            const plainBuf = await crypto.subtle.decrypt(
+                {name: "AES-GCM", iv}, key, data
+            );
+            document.getElementById("clear").value = dec.decode(plainBuf);
+        } catch (e) {
+            showError(`Decryption failed: ${e.message || e}`);
+        }
+    }
+
+    document.getElementById("btnEncrypt").addEventListener("click", encrypt);
+    document.getElementById("btnDecrypt").addEventListener("click", decrypt);
+</script>
