@@ -1,0 +1,95 @@
+---
+layout: post
+emoji: ⏱️
+title: Time
+category: Random
+description: What's the time?
+---
+<style>
+    body {
+        font-family: 'Space Mono', Courier, monospace;
+        text-align: center;
+        background-color: #1e1e1e;
+        color: white;
+        margin: 0;
+        padding: 50px 20px;
+    }
+
+    .location {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #ffc107;
+    }
+
+    .time-container {
+        font-size: 8em;
+        font-weight: bold;
+        color: #ffc107;
+        line-height: 1;
+    }
+
+    .deci {
+        font-size: 0.3em;
+        vertical-align: super;
+        color: white;
+    }
+
+    .subtext {
+        font-size: 1.5em;
+        margin-top: 10px;
+        color: #ccc;
+    }
+</style>
+<div class="location" id="location">Loading...</div>
+<div class="time-container">
+    <span id="local-time-main">--:--</span><span class="deci" id="local-deci">0</span>
+</div>
+<div class="subtext" id="current-date"></div>
+<div class="subtext" id="utc-time"></div>
+
+
+<script>
+    function getFlagEmoji(locale) {
+        const regionMatch = locale.match(/[-_]([A-Z]{2})$/i);
+        if (!regionMatch) return '🌐';
+        const countryCode = regionMatch[1].toUpperCase();
+        return countryCode.replace(/./g, char =>
+            String.fromCodePoint(127397 + char.charCodeAt())
+        );
+    }
+
+    function updateDateTime() {
+        const now = new Date();
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const locale = navigator.language;
+        const dateFormatter = new Intl.DateTimeFormat(locale, {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        const fullDate = dateFormatter.format(now);
+        const flag = getFlagEmoji(locale);
+        document.getElementById('location').innerHTML = `<span class="flag">${flag}</span> ${timezone.replace('_', ' ')}`;
+        document.getElementById('current-date').textContent = fullDate;
+
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const centiseconds = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, '0');
+        document.getElementById('local-time-main').textContent = `${hours}:${minutes}`;
+        document.getElementById('local-deci').textContent = `${seconds}.${centiseconds}`;
+
+        const utcHours = String(now.getUTCHours()).padStart(2, '0');
+        const utcMinutes = String(now.getUTCMinutes()).padStart(2, '0');
+        const utcSeconds = String(now.getUTCSeconds()).padStart(2, '0');
+        const utcCentiseconds = String(Math.floor(now.getUTCMilliseconds() / 10)).padStart(2, '0');
+        const utcTime = `${utcHours}:${utcMinutes}:${utcSeconds}.${utcCentiseconds}`;
+        document.getElementById('utc-time').textContent = `UTC Time: ${utcTime}`;
+
+        requestAnimationFrame(updateDateTime);
+    }
+
+    requestAnimationFrame(updateDateTime);
+</script>
