@@ -69,3 +69,20 @@ bar 14 of (49), the Cornet Solo, [at 7:50](https://youtu.be/U4yH4B9deok?si=BKVdL
 ![dukas-apprenti-sorcier-58.jpg](dukas-apprenti-sorcier-58.jpg)
 
 </details>
+
+
+## Jean Sibelius
+
+### Symphony No.2, 4th movement
+
+From J to K. [At 37:48](https://youtu.be/2lHncn68uyQ?si=BEjDbqZVDA_3TFiw&t=2268)
+
+<details>
+  <summary><a href="https://imslp.org/wiki/Symphony_No.2%2C_Op.43_(Sibelius%2C_Jean)">Symphony No.2, Op.43 (Sibelius, Jean)</a> Page 275</summary>
+
+![sibelius-symphony-2-1st-mvmt-01.png](sibelius-symphony-2-1st-mvmt-01.png)
+![sibelius-symphony-2-1st-mvmt-02.png](sibelius-symphony-2-1st-mvmt-02.png)
+![sibelius-symphony-2-1st-mvmt-03.jpg](sibelius-symphony-2-1st-mvmt-03.png)
+![sibelius-symphony-2-1st-mvmt-04.jpg](sibelius-symphony-2-1st-mvmt-04.png)
+
+</details>
