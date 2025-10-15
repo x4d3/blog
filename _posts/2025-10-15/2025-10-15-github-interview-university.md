@@ -5,11 +5,26 @@ title: Github Interview University
 category: Dev
 description: A complete computer science study plan to become a software engineer.
 ---
+<style>
+#progress {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg);
+    z-index: 1000;   
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+    height: 120px; 
+}
+
+input {
+  scroll-margin-top: 150px; /* adjust to match your #progress height */
+}
+</style>
 
 <script src="github-interview-university.js"></script>
 
-Extracted from: https://github.com/jwasham/coding-interview-university
 
+Extracted from: https://github.com/jwasham/coding-interview-university
 
 <div id="progress"></div>
 
