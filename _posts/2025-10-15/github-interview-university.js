@@ -24,8 +24,29 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-        cb.addEventListener('change', renderProgressBar);
+
+    document.querySelectorAll('li > input[type="checkbox"]').forEach(parentCheckbox => {
+        parentCheckbox.addEventListener('change', function () {
+            const li = parentCheckbox.closest('li');
+            if (!li) return;
+            const childCheckboxes = li.querySelectorAll('input[type="checkbox"]');
+            console.log(childCheckboxes);
+            childCheckboxes.forEach(cb => {
+                if (cb.checked !== parentCheckbox.checked) {
+                    cb.checked = parentCheckbox.checked;
+                    // Save state directly to localStorage
+                    const checkboxId = cb.dataset.checkboxId || cb.id;
+                    const now = new Date().toISOString();
+                    const data = getCheckboxData();
+                    data[checkboxId] = {
+                        checked: cb.checked,
+                        timestamp: now
+                    };
+                    setCheckboxData(data);
+                }
+            });
+            renderProgressBar();
+        });
     });
 
     attachProgressListeners();
