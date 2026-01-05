@@ -1,0 +1,124 @@
+---
+emoji: 🧠
+layout: post
+title: Quizz
+category: Random
+description: Quel musicien du studi est tu?
+---
+
+<div id="quiz"></div>
+<script type="text/javascript" module>
+    function parseQuizzTSV(tsv) {
+        const lines = tsv.trim().split('\n');
+        const header = lines[0].split('\t').map(h => h.trim());
+        const resultKeys = header.slice(2);
+
+        const questions = [];
+        let currentQuestion = null;
+
+        for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split('\t');
+            if (cols[0].trim()) {
+                if (currentQuestion) questions.push(currentQuestion);
+                currentQuestion = {
+                    question: cols[0].trim(),
+                    answers: []
+                };
+            }
+            const answerText = cols[1].trim();
+            if (answerText) {
+                const coefficients = {};
+                resultKeys.forEach((key, idx) => {
+                    const val = cols[idx + 2];
+                    coefficients[key] = val ? Number(val.trim()) : 0;
+                });
+                currentQuestion.answers.push({
+                    text: answerText,
+                    coefficients
+                });
+            }
+        }
+        if (currentQuestion) questions.push(currentQuestion);
+        return questions;
+    }
+
+    function renderQuiz(quiz) {
+        const container = document.getElementById('quiz');
+        let html = '<form id="quizForm">';
+        quiz.questions.forEach((q, qi) => {
+            html += `<div class="question"><h2>${q.question}</h2>`;
+            q.answers.forEach((ans, ai) => {
+                // Only the first radio in each group needs required
+                const required = ai === 0 ? 'required' : '';
+                html += `
+      <label>
+        <input type="radio" name="q${qi}" value="${ai}" ${required}>
+        ${ans.text}
+      </label><br>
+    `;
+            });
+            html += `</div>`;
+        });
+        html += `<button type="submit" id="submitBtn">Submit</button>`;
+        html += `<div id="result" class="result"></div>`;
+        html += '</form>';
+        container.innerHTML = html;
+
+        document.getElementById('quizForm').onsubmit = function (e) {
+            e.preventDefault();
+            const scores = {};
+            Object.keys(quiz.results).forEach(k => scores[k] = 0);
+            quiz.questions.forEach((q, qi) => {
+                const selected = document.querySelector(`input[name="q${qi}"]:checked`);
+                const ai = parseInt(selected.value, 10);
+                const coeffs = q.answers[ai].coefficients;
+                Object.keys(coeffs).forEach(k => scores[k] += coeffs[k]);
+            });
+            let winnerKey = null, max = -Infinity;
+            Object.keys(scores).forEach(k => {
+                if (scores[k] > max) {
+                    max = scores[k];
+                    winnerKey = k;
+                }
+            });
+            document.getElementById('result').innerHTML = `Tu es: <b>${quiz.results[winnerKey] || "Unknown"}</b>`;
+        };
+    }
+
+    async function loadQuiz() {
+        const response = await fetch('studi.tsv');
+        const tsv = await response.text();
+        const questions = parseQuizzTSV(tsv);
+
+        const resultSet = new Set();
+        questions.forEach(q => {
+            q.answers.forEach(ans => {
+                Object.keys(ans.coefficients).forEach(k => resultSet.add(k));
+            });
+        });
+
+        const results = {};
+        resultSet.forEach(k => results[k] = k);
+
+        const quiz = {results, questions};
+        renderQuiz(quiz);
+    }
+
+    loadQuiz();
+
+</script>
+<style>
+    .question {
+        margin-bottom: 2em;
+    }
+
+    .answers button {
+        margin: 0.5em 0;
+        display: block;
+    }
+
+    .result {
+        font-size: 1.5em;
+        margin-top: 2em;
+    }
+</style>
