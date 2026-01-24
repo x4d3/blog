@@ -5,6 +5,8 @@ title: Intonation Ear Trainer
 category: Music
 description: A web app to practice musical intonation.
 ---
+<script src="{{"/assets/js/vexflow.js" | relative_url }}"></script>
+
 <style>
     body {
         font-family: sans-serif;
@@ -20,7 +22,15 @@ description: A web app to practice musical intonation.
 
     #note {
         font-size: 36px;
-        margin: 20px;
+        margin: 12px;
+    }
+
+    #vex {
+        padding: 5px;
+        margin: 0 auto 12px;
+        width: 200px;
+        height: 150px;
+        background-color: #f9f9f9;
     }
 
     #feedback {
@@ -43,9 +53,14 @@ description: A web app to practice musical intonation.
         margin-left: 8px;
     }
 </style>
-
+<div id="volumeControl">
+    <label for="volumeSlider">Volume</label>
+    <input type="range" id="volumeSlider" min="0" max="100" value="80"/>
+    <span id="volumeLabel">80 %</span>
+</div>
 <button id="startBtn">Start Game</button>
 <div id="note"></div>
+<div id="vex"></div>
 
 <div id="controls" style="display:none;">
     <button id="replayBtn">🔁 Replay</button>
@@ -57,14 +72,10 @@ description: A web app to practice musical intonation.
 <div id="feedback"></div>
 <div id="summary"></div>
 
-<div id="volumeControl">
-    <label for="volumeSlider">Volume</label>
-    <input type="range" id="volumeSlider" min="0" max="100" value="80"/>
-    <span id="volumeLabel">80 %</span>
-</div>
+
+<!-- VexFlow (global `Vex`) -->
 
 <script type="module">
-
     /* AudioController: manages AudioContext, master gain, smooth volume and per-note play/stop */
     class AudioController {
         constructor() {
@@ -180,7 +191,7 @@ description: A web app to practice musical intonation.
         }
     }
 
-    /* IntonationTrainer: UI wiring and game logic; provides a start() method */
+    /* IntonationTrainer: UI wiring and game logic; provides a start() method and draws with VexFlow */
     class IntonationTrainer {
         constructor(audioController) {
             this.audio = audioController;
@@ -188,6 +199,7 @@ description: A web app to practice musical intonation.
             // UI
             this.startBtn = document.getElementById('startBtn');
             this.noteDiv = document.getElementById('note');
+            this.vexContainer = document.getElementById('vex');
             this.controls = document.getElementById('controls');
             this.feedbackDiv = document.getElementById('feedback');
             this.summaryDiv = document.getElementById('summary');
@@ -199,7 +211,7 @@ description: A web app to practice musical intonation.
             this.volumeLabel = document.getElementById('volumeLabel');
 
             // game state
-            this.notes = ['C3', 'C♯3', 'D3', 'D♯3', 'E3', 'F3', 'F♯3', 'G3', 'G♯3', 'A3', 'A♯3', 'B3', 'C4'];
+            this.notes = ['C4', 'C♯4', 'D4', 'D♯4', 'E4', 'F4', 'F♯4', 'G4', 'G♯4', 'A4', 'A♯4', 'B4', 'C5'];
             this.roundIndex = 0;
             this.score = 0;
             this.history = [];
@@ -207,6 +219,9 @@ description: A web app to practice musical intonation.
             this.detunedFrequency = 0;
             this.currentNoteName = '';
             this.playSequenceFn = null;
+
+            // VexFlow renderer instance reference
+            this.vfRenderer = null;
 
             this._bindEvents();
             this._initVolumeUI();
@@ -266,6 +281,9 @@ description: A web app to practice musical intonation.
 
             this.noteDiv.textContent = `Question ${this.roundIndex}: ${this.currentNoteName}`;
 
+            // draw the note with VexFlow
+            this._drawVexNote(this.currentNoteName);
+
             this.playSequenceFn = () => {
                 this.audio.stopActiveNote();
                 this.audio.playFrequency(baseFreq, 2);
@@ -296,6 +314,61 @@ description: A web app to practice musical intonation.
       <strong>Final Score:</strong> ${this.score} / 10<br><br>
       ${this.history.map(h => `Q${h.question}:${h.note} ${h.result ? '✅' : '❌'}`).join(' ')}
     `;
+        }
+
+        /* VexFlow helpers */
+
+        _mapToVexKey(noteName) {
+            // noteName like "C♯3" or "A3"
+            const m = noteName.match(/^([A-G])(♯|#?)(\d)$/);
+            if (!m) return {key: 'c/4', accidental: null};
+            const [, letter, sharp, octave] = m;
+            const key = `${letter.toLowerCase()}/${octave}`;
+            const accidental = sharp ? '#' : null;
+            return {key, accidental};
+        }
+
+        _clearVex() {
+            if (this.vfRenderer) {
+                // remove existing SVG element(s)
+                this.vexContainer.innerHTML = '';
+                this.vfRenderer = null;
+            }
+        }
+
+        _drawVexNote(noteName) {
+            const VF = VexFlow;
+            if (!VF) {
+                console.error('VexFlow library not loaded');
+                return;
+            }
+
+            this._clearVex();
+
+            // create renderer (SVG)
+            this.vfRenderer = new VF.Renderer(this.vexContainer, VF.Renderer.Backends.SVG);
+            // size: width x height
+            const width = 200;
+            const height = 150;
+            this.vfRenderer.resize(width, height);
+            const context = this.vfRenderer.getContext();
+
+            // stave
+            const stave = new VF.Stave(0, 8, width - 10);
+            stave.addClef('treble');
+            stave.setContext(context).draw();
+
+            const {key, accidental} = this._mapToVexKey(noteName);
+
+            // create a quarter note
+            const staveNote = new VF.StaveNote({clef: 'treble', keys: [key], duration: 'q'});
+
+            if (accidental) {
+                staveNote.addModifier(new VF.Accidental(accidental), 0);
+            }
+
+            // center and draw
+            VF.Formatter.FormatAndDraw(context, stave, [staveNote]);
         }
     }
 
