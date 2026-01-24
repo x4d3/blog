@@ -5,7 +5,6 @@ title: Intonation Ear Trainer
 category: Music
 description: A web app to practice musical intonation.
 ---
-
 <style>
     body {
         font-family: sans-serif;
@@ -45,12 +44,8 @@ description: A web app to practice musical intonation.
     }
 </style>
 
-
 <button id="startBtn">Start Game</button>
-
 <div id="note"></div>
-
-
 
 <div id="controls" style="display:none;">
     <button id="replayBtn">🔁 Replay</button>
@@ -61,240 +56,253 @@ description: A web app to practice musical intonation.
 
 <div id="feedback"></div>
 <div id="summary"></div>
+
 <div id="volumeControl">
     <label for="volumeSlider">Volume</label>
-    <input type="range" id="volumeSlider" min="0" max="100" value="80" />
+    <input type="range" id="volumeSlider" min="0" max="100" value="80"/>
     <span id="volumeLabel">80 %</span>
 </div>
-<script>
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    // master gain for overall volume control
-    const masterGain = audioCtx.createGain();
-    masterGain.gain.value = 0.8; // default 80%
-    masterGain.connect(audioCtx.destination);
+<script type="module">
 
-    // Track the currently playing nodes and timers
-    let currentOsc = null;
-    let currentGain = null;
-    let currentStopTimer = null;
+    /* AudioController: manages AudioContext, master gain, smooth volume and per-note play/stop */
+    class AudioController {
+        constructor() {
+            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            this.masterGain = this.audioCtx.createGain();
+            this.masterGain.gain.value = 0.8;
+            this.masterGain.connect(this.audioCtx.destination);
 
-    function stopCurrentNote() {
-        // clear any JS timers that would stop the oscillator later
-        if (currentStopTimer) {
-            clearTimeout(currentStopTimer);
-            currentStopTimer = null;
+            this.active = {}; // holds oscillator, gain, stopTimer when a note is playing
+            this.EPSILON = 0.0001;
+            this.VOLUME_SMOOTH_TC = 0.03;
         }
 
-        if (currentOsc && currentGain) {
-            const now = audioCtx.currentTime;
-            // smooth fade-out to avoid clicks
-            try {
-                currentGain.gain.cancelScheduledValues(now);
-                // read current value via setValueAtTime to capture it
-                currentGain.gain.setValueAtTime(currentGain.gain.value || 0.0001, now);
-                currentGain.gain.linearRampToValueAtTime(0.0001, now + 0.05);
-                currentOsc.stop(now + 0.05);
-            } catch (e) {
-                // ignore if stop was already scheduled or node already stopped
+        async resumeIfSuspended() {
+            if (this.audioCtx.state === 'suspended') {
+                await this.audioCtx.resume();
+            }
+        }
+
+        setVolumePercent(percent) {
+            const target = Math.max(percent / 100, this.EPSILON);
+            const now = this.audioCtx.currentTime;
+            this.masterGain.gain.cancelScheduledValues(now);
+            this.masterGain.gain.setTargetAtTime(target, now, this.VOLUME_SMOOTH_TC);
+        }
+
+        stopActiveNote() {
+            if ('stopTimer' in this.active) {
+                clearTimeout(this.active.stopTimer);
+                delete this.active.stopTimer;
             }
 
-            // disconnect after a short delay to allow stop to take effect
-            setTimeout(() => {
-                try { currentOsc.disconnect(); } catch (e) {}
-                try { currentGain.disconnect(); } catch (e) {}
-            }, 120);
+            if (this.active.oscillator && this.active.gain) {
+                const now = this.audioCtx.currentTime;
+                try {
+                    const g = this.active.gain.gain;
+                    g.cancelScheduledValues(now);
+                    g.setValueAtTime(g.value || this.EPSILON, now);
+                    g.linearRampToValueAtTime(this.EPSILON, now + 0.05);
+                    this.active.oscillator.stop(now + 0.05);
+                } catch (e) {
+                    // ignore if already stopped
+                }
 
-            currentOsc = null;
-            currentGain = null;
+                setTimeout(() => {
+                    try {
+                        this.active.oscillator.disconnect();
+                    } catch (e) {
+                    }
+                    try {
+                        this.active.gain.disconnect();
+                    } catch (e) {
+                    }
+                }, 120);
+
+                delete this.active.oscillator;
+                delete this.active.gain;
+            }
+        }
+
+        playFrequency(freq, durationSeconds) {
+            this.stopActiveNote();
+
+            const osc = this.audioCtx.createOscillator();
+            const gainNode = this.audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+
+            const now = this.audioCtx.currentTime;
+            gainNode.gain.setValueAtTime(0.0, now);
+            gainNode.gain.linearRampToValueAtTime(0.2, now + 0.01);
+
+            osc.connect(gainNode);
+            gainNode.connect(this.masterGain);
+            osc.start();
+
+            this.active.oscillator = osc;
+            this.active.gain = gainNode;
+
+            this.active.stopTimer = setTimeout(() => {
+                const t = this.audioCtx.currentTime;
+                try {
+                    const g = gainNode.gain;
+                    g.cancelScheduledValues(t);
+                    g.setValueAtTime(g.value || this.EPSILON, t);
+                    g.linearRampToValueAtTime(this.EPSILON, t + 0.05);
+                    osc.stop(t + 0.05);
+                } catch (e) {
+                }
+                setTimeout(() => {
+                    try {
+                        osc.disconnect();
+                    } catch (e) {
+                    }
+                    try {
+                        gainNode.disconnect();
+                    } catch (e) {
+                    }
+                    delete this.active.oscillator;
+                    delete this.active.gain;
+                }, 120);
+                delete this.active.stopTimer;
+            }, durationSeconds * 1000);
+        }
+
+        noteToFrequency(note) {
+            const map = {C: -9, D: -7, E: -5, F: -4, G: -2, A: 0, B: 2};
+            const m = note.match(/^([A-G])(♯|#?)(\d)$/);
+            if (!m) return 440;
+            const [, letter, sharp, octave] = m;
+            const semitones = map[letter] + (sharp ? 1 : 0) + (octave - 4) * 12;
+            return 440 * Math.pow(2, semitones / 12);
         }
     }
 
-    function playFrequency(freq, duration) {
-        // ensure any previous note is stopped
-        stopCurrentNote();
+    /* IntonationTrainer: UI wiring and game logic; provides a start() method */
+    class IntonationTrainer {
+        constructor(audioController) {
+            this.audio = audioController;
 
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+            // UI
+            this.startBtn = document.getElementById('startBtn');
+            this.noteDiv = document.getElementById('note');
+            this.controls = document.getElementById('controls');
+            this.feedbackDiv = document.getElementById('feedback');
+            this.summaryDiv = document.getElementById('summary');
+            this.replayBtn = document.getElementById('replayBtn');
+            this.flatBtn = document.getElementById('flatBtn');
+            this.sharpBtn = document.getElementById('sharpBtn');
 
-        osc.type = "sine";
-        osc.frequency.value = freq;
+            this.volumeSlider = document.getElementById('volumeSlider');
+            this.volumeLabel = document.getElementById('volumeLabel');
 
-        const now = audioCtx.currentTime;
-        // quick attack
-        gain.gain.setValueAtTime(0.0, now);
-        gain.gain.linearRampToValueAtTime(0.2, now + 0.01);
+            // game state
+            this.notes = ['C3', 'C♯3', 'D3', 'D♯3', 'E3', 'F3', 'F♯3', 'G3', 'G♯3', 'A3', 'A♯3', 'B3', 'C4'];
+            this.roundIndex = 0;
+            this.score = 0;
+            this.history = [];
+            this.correctAnswer = '';
+            this.detunedFrequency = 0;
+            this.currentNoteName = '';
+            this.playSequenceFn = null;
 
-        // connect per-note gain into the master gain
-        osc.connect(gain);
-        gain.connect(masterGain);
-
-        osc.start();
-
-        currentOsc = osc;
-        currentGain = gain;
-
-        // schedule stop using a JS timer so we can clear it if needed
-        currentStopTimer = setTimeout(() => {
-            const t = audioCtx.currentTime;
-            try {
-                currentGain.gain.cancelScheduledValues(t);
-                currentGain.gain.setValueAtTime(currentGain.gain.value || 0.0001, t);
-                currentGain.gain.linearRampToValueAtTime(0.0001, t + 0.05);
-                currentOsc.stop(t + 0.05);
-            } catch (e) {}
-            // cleanup after stop
-            setTimeout(() => {
-                try { currentOsc.disconnect(); } catch (e) {}
-                try { currentGain.disconnect(); } catch (e) {}
-                currentOsc = null;
-                currentGain = null;
-            }, 120);
-            currentStopTimer = null;
-        }, duration * 1000);
-    }
-
-    function noteToFrequency(note) {
-        const map = {C: -9, D: -7, E: -5, F: -4, G: -2, A: 0, B: 2};
-        const m = note.match(/^([A-G])(♯?)(\d)$/);
-        if (!m) return 440;
-        const [, letter, sharp, octave] = m;
-        const semitones =
-            map[letter] + (sharp ? 1 : 0) + (octave - 4) * 12;
-        return 440 * Math.pow(2, semitones / 12);
-    }
-
-    const notes = [
-        "C3", "C♯3", "D3", "D♯3", "E3", "F3",
-        "F♯3", "G3", "G♯3", "A3", "A♯3", "B3", "C4"
-    ];
-
-    let round = 0;
-    let score = 0;
-    let history = [];
-    let correctAnswer = "";
-    let detunedFreq = 0;
-    let playNotes = null;
-    let note = null;
-    const startBtn = document.getElementById("startBtn");
-    const noteDiv = document.getElementById("note");
-    const controls = document.getElementById("controls");
-    const feedbackDiv = document.getElementById("feedback");
-    const summaryDiv = document.getElementById("summary");
-
-    // volume UI
-    const volumeSlider = document.getElementById("volumeSlider");
-    const volumeLabel = document.getElementById("volumeLabel");
-
-    // initialize slider to masterGain value
-    volumeSlider.value = Math.round(masterGain.gain.value * 100);
-    volumeLabel.textContent = `${volumeSlider.value} %`;
-
-    volumeSlider.oninput = (e) => {
-        const raw = Number(e.target.value);
-        // avoid exact 0 (exponential ramps can't hit 0 and tiny values prevent clicks)
-        const target = Math.max(raw / 100, 0.0001);
-        const now = audioCtx.currentTime;
-        masterGain.gain.cancelScheduledValues(now);
-        // smooth toward target with a short time constant (0.03s)
-        masterGain.gain.setTargetAtTime(target, now, 0.03);
-        volumeLabel.textContent = `${raw} %`;
-    };
-
-    startBtn.onclick = () => {
-        // resume audio context on user gesture to satisfy browser autoplay policy
-        if (audioCtx.state === "suspended") {
-            audioCtx.resume();
+            this._bindEvents();
+            this._initVolumeUI();
         }
 
-        // ensure master gain reflects slider after resume
-        const sliderTarget = Math.max(Number(volumeSlider.value) / 100, 0.0001);
-        masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
-        masterGain.gain.setTargetAtTime(sliderTarget, audioCtx.currentTime, 0.03);
+        _bindEvents() {
+            this.startBtn.addEventListener('click', () => this.start());
 
-        startBtn.style.display = "none";
-        round = 0;
-        score = 0;
-        history = [];
-        summaryDiv.textContent = "";
-        nextRound();
-    };
+            this.volumeSlider.addEventListener('input', (e) => {
+                const v = Number(e.target.value);
+                this.audio.setVolumePercent(v);
+                this.volumeLabel.textContent = `${v} %`;
+            });
 
-    function nextRound() {
-        if (round >= 10) {
-            endGame();
-            return;
+            this.replayBtn.addEventListener('click', () => {
+                this.audio.stopActiveNote();
+                if (this.playSequenceFn) this.playSequenceFn();
+            });
+
+            this.flatBtn.addEventListener('click', () => this._answer('flat'));
+            this.sharpBtn.addEventListener('click', () => this._answer('sharp'));
         }
 
-        feedbackDiv.textContent = "";
-        controls.style.display = "none";
-        round++;
+        _initVolumeUI() {
+            const value = Math.round(this.audio.masterGain.gain.value * 100);
+            this.volumeSlider.value = value;
+            this.volumeLabel.textContent = `${value} %`;
+        }
 
-        note = notes[Math.floor(Math.random() * notes.length)];
-        const baseFreq = noteToFrequency(note);
-        correctAnswer = Math.random() < 0.5 ? "flat" : "sharp";
-        const cents = 20;
-        const factor = Math.pow(2, cents / 1200);
+        /* start: publicly callable method to start the trainer programmatically */
+        async start() {
+            await this.audio.resumeIfSuspended();
+            this.audio.setVolumePercent(Number(this.volumeSlider.value));
+            this.startBtn.style.display = 'none';
+            this.roundIndex = 0;
+            this.score = 0;
+            this.history = [];
+            this.summaryDiv.textContent = '';
+            this.nextRound();
+        }
 
-        detunedFreq =
-            correctAnswer === "sharp"
-                ? baseFreq * factor
-                : baseFreq / factor;
+        nextRound() {
+            if (this.roundIndex >= 10) {
+                this._endGame();
+                return;
+            }
+            this.feedbackDiv.textContent = '';
+            this.controls.style.display = 'none';
+            this.roundIndex++;
 
-        noteDiv.textContent = `Question ${round}: ${note}`;
+            this.currentNoteName = this.notes[Math.floor(Math.random() * this.notes.length)];
+            const baseFreq = this.audio.noteToFrequency(this.currentNoteName);
+            this.correctAnswer = Math.random() < 0.5 ? 'flat' : 'sharp';
+            const cents = 20;
+            const factor = Math.pow(2, cents / 1200);
+            this.detunedFrequency = this.correctAnswer === 'sharp' ? baseFreq * factor : baseFreq / factor;
 
-        playNotes = () => {
-            // stop any current note before starting sequence
-            stopCurrentNote();
-            playFrequency(baseFreq, 2);
-            setTimeout(() => {
-                // when second note starts, playFrequency will stop the first note
-                playFrequency(detunedFreq, 2);
-                controls.style.display = "block";
-            }, 2200);
-        };
+            this.noteDiv.textContent = `Question ${this.roundIndex}: ${this.currentNoteName}`;
 
-        playNotes();
+            this.playSequenceFn = () => {
+                this.audio.stopActiveNote();
+                this.audio.playFrequency(baseFreq, 2);
+                setTimeout(() => {
+                    this.audio.playFrequency(this.detunedFrequency, 2);
+                    this.controls.style.display = 'block';
+                }, 2200);
+            };
+
+            this.playSequenceFn();
+        }
+
+        _answer(choice) {
+            const correct = choice === this.correctAnswer;
+            if (correct) this.score++;
+            this.history.push({note: this.currentNoteName, question: this.roundIndex, result: correct});
+            this.feedbackDiv.textContent = correct ? '✅ Correct!' : '❌ Wrong';
+            this.controls.style.display = 'none';
+            setTimeout(() => this.nextRound(), 1200);
+        }
+
+        _endGame() {
+            this.audio.stopActiveNote();
+            this.noteDiv.textContent = '🎉 Game Over';
+            this.feedbackDiv.textContent = '';
+            this.controls.style.display = 'none';
+            this.summaryDiv.innerHTML = `
+      <strong>Final Score:</strong> ${this.score} / 10<br><br>
+      ${this.history.map(h => `Q${h.question}:${h.note} ${h.result ? '✅' : '❌'}`).join(' ')}
+    `;
+        }
     }
 
-    function answer(choice) {
-        const correct = choice === correctAnswer;
-        if (correct) score++;
+    /* Instantiate controller and trainer */
+    const audioController = new AudioController();
+    const trainer = new IntonationTrainer(audioController);
 
-        history.push({
-            note,
-            question: round,
-            result: correct
-        });
-
-        feedbackDiv.textContent = correct ? "✅ Correct!" : "❌ Wrong";
-        controls.style.display = "none";
-
-        setTimeout(nextRound, 1200);
-    }
-
-    document.getElementById("flatBtn").onclick = () => answer("flat");
-    document.getElementById("sharpBtn").onclick = () => answer("sharp");
-
-    document.getElementById("replayBtn").onclick = () => {
-        // stop any current note before replaying
-        stopCurrentNote();
-        playNotes();
-    };
-
-    function endGame() {
-        // stop any remaining sound
-        stopCurrentNote();
-
-        noteDiv.textContent = "🎉 Game Over";
-        feedbackDiv.textContent = "";
-        controls.style.display = "none";
-
-        summaryDiv.innerHTML = `
-        <strong>Final Score:</strong> ${score} / 10<br><br>
-        ${history.map(({question, note, result}) =>
-            `Q${question}:${note}  ${result ? "✅" : "❌"}`
-        ).join(" ")}
-      `;
-    }
+    /* Expose trainer.start() to the global scope so it can be called programmatically if desired */
+    window.IntonationTrainerInstance = trainer;
 </script>
