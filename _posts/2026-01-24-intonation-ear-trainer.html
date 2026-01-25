@@ -5,52 +5,94 @@ title: Intonation Ear Trainer
 category: Music
 description: A web app to practice musical intonation.
 ---
+<!-- Ensure VexFlow is available; adjust path as needed for your site -->
 <script src="{{"/assets/js/vexflow.js" | relative_url }}"></script>
-
 <style>
+    :root {
+        --control-size: 20px;
+    }
+
     body {
         font-family: sans-serif;
         text-align: center;
-        margin-top: 40px;
+        margin-top: 24px;
+        padding: 8px;
     }
 
     button {
         font-size: 18px;
-        padding: 10px 20px;
-        margin: 8px;
+        padding: 14px 22px;
+        margin: 10px;
+        border-radius: 8px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
 
     #note {
-        font-size: 36px;
-        margin: 12px;
+        font-size: 26px;
+        margin: 8px;
     }
 
     #vex {
-        padding: 5px;
         margin: 0 auto 12px;
-        width: 200px;
-        height: 150px;
+        width: 100%;
+        max-width: 320px;
+        height: 120px;
         background-color: #f9f9f9;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #controls {
+        margin-top: 12px;
     }
 
     #feedback {
-        font-size: 28px;
-        margin: 20px;
-        height: 40px;
+        font-size: 20px;
+        margin: 12px;
+        min-height: 28px;
     }
 
     #summary {
-        font-size: 22px;
-        margin-top: 30px;
+        font-size: 18px;
+        margin-top: 18px;
+        word-break: break-word;
     }
 
     #volumeControl {
         margin: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    #volumeSlider {
+        width: 70%;
+        max-width: 240px;
+        touch-action: pan-y;
     }
 
     #volumeLabel {
         font-weight: bold;
         margin-left: 8px;
+        min-width: 48px;
+        text-align: left;
+    }
+
+    /* Make inputs and buttons larger on small screens */
+    @media (max-width: 420px) {
+        button {
+            font-size: 20px;
+            padding: 16px 24px;
+        }
+
+        #vex {
+            height: 120px;
+        }
     }
 </style>
 <div id="volumeControl">
@@ -58,9 +100,10 @@ description: A web app to practice musical intonation.
     <input type="range" id="volumeSlider" min="0" max="100" value="80"/>
     <span id="volumeLabel">80 %</span>
 </div>
-<button id="startBtn">Start Game</button>
-<div id="note"></div>
-<div id="vex"></div>
+
+<button id="startBtn" aria-label="Start game">Start Game</button>
+<div id="note" aria-live="polite"></div>
+<div id="vex" role="img" aria-label="musical note"></div>
 
 <div id="controls" style="display:none;">
     <button id="replayBtn">🔁 Replay</button>
@@ -69,14 +112,11 @@ description: A web app to practice musical intonation.
     <button id="sharpBtn">⬆ Sharp</button>
 </div>
 
-<div id="feedback"></div>
+<div id="feedback" aria-live="polite"></div>
 <div id="summary"></div>
 
-
-<!-- VexFlow (global `Vex`) -->
-
 <script type="module">
-    /* AudioController: manages AudioContext, master gain, smooth volume and per-note play/stop */
+    /* AudioController class */
     class AudioController {
         constructor() {
             this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -117,7 +157,7 @@ description: A web app to practice musical intonation.
                     g.linearRampToValueAtTime(this.EPSILON, now + 0.05);
                     this.active.oscillator.stop(now + 0.05);
                 } catch (e) {
-                    // ignore if already stopped
+                    // ignore
                 }
 
                 setTimeout(() => {
@@ -191,12 +231,10 @@ description: A web app to practice musical intonation.
         }
     }
 
-    /* IntonationTrainer: UI wiring and game logic; provides a start() method and draws with VexFlow */
+    /* IntonationTrainer class (lazy AudioController) */
     class IntonationTrainer {
-        constructor(audioController) {
-            this.audio = audioController;
-
-            // UI
+        constructor(existingAudioController = null) {
+            this.audio = existingAudioController; // may be null; created on first gesture or start()
             this.startBtn = document.getElementById('startBtn');
             this.noteDiv = document.getElementById('note');
             this.vexContainer = document.getElementById('vex');
@@ -210,7 +248,6 @@ description: A web app to practice musical intonation.
             this.volumeSlider = document.getElementById('volumeSlider');
             this.volumeLabel = document.getElementById('volumeLabel');
 
-            // game state
             this.notes = ['C4', 'C♯4', 'D4', 'D♯4', 'E4', 'F4', 'F♯4', 'G4', 'G♯4', 'A4', 'A♯4', 'B4', 'C5'];
             this.roundIndex = 0;
             this.score = 0;
@@ -219,12 +256,14 @@ description: A web app to practice musical intonation.
             this.detunedFrequency = 0;
             this.currentNoteName = '';
             this.playSequenceFn = null;
-
-            // VexFlow renderer instance reference
             this.vfRenderer = null;
 
             this._bindEvents();
             this._initVolumeUI();
+
+            // Ensure audio can be resumed on first gesture without forcing game start
+            this._attachFirstGestureResume();
+            window.addEventListener('resize', () => this._redrawVexIfNeeded());
         }
 
         _bindEvents() {
@@ -232,12 +271,12 @@ description: A web app to practice musical intonation.
 
             this.volumeSlider.addEventListener('input', (e) => {
                 const v = Number(e.target.value);
-                this.audio.setVolumePercent(v);
+                if (this.audio) this.audio.setVolumePercent(v);
                 this.volumeLabel.textContent = `${v} %`;
             });
 
             this.replayBtn.addEventListener('click', () => {
-                this.audio.stopActiveNote();
+                if (this.audio) this.audio.stopActiveNote();
                 if (this.playSequenceFn) this.playSequenceFn();
             });
 
@@ -246,15 +285,41 @@ description: A web app to practice musical intonation.
         }
 
         _initVolumeUI() {
-            const value = Math.round(this.audio.masterGain.gain.value * 100);
+            const value = this.audio ? Math.round(this.audio.masterGain.gain.value * 100) : Number(this.volumeSlider.value || 80);
             this.volumeSlider.value = value;
             this.volumeLabel.textContent = `${value} %`;
         }
 
-        /* start: publicly callable method to start the trainer programmatically */
-        async start() {
+        async _ensureAudio() {
+            if (!this.audio) {
+                this.audio = new AudioController();
+                // set slider volume smoothly on creation
+                this.audio.setVolumePercent(Number(this.volumeSlider.value));
+                this._initVolumeUI();
+            }
             await this.audio.resumeIfSuspended();
-            this.audio.setVolumePercent(Number(this.volumeSlider.value));
+        }
+
+        _attachFirstGestureResume() {
+            const handler = async () => {
+                try {
+                    await this._ensureAudio();
+                } catch (e) {
+                }
+                removeListeners();
+            };
+            const removeListeners = () => {
+                document.removeEventListener('pointerdown', handler);
+                document.removeEventListener('touchstart', handler);
+                document.removeEventListener('click', handler);
+            };
+            document.addEventListener('pointerdown', handler, {once: true});
+            document.addEventListener('touchstart', handler, {once: true, passive: true});
+            document.addEventListener('click', handler, {once: true});
+        }
+
+        async start() {
+            await this._ensureAudio();
             this.startBtn.style.display = 'none';
             this.roundIndex = 0;
             this.score = 0;
@@ -281,7 +346,6 @@ description: A web app to practice musical intonation.
 
             this.noteDiv.textContent = `Question ${this.roundIndex}: ${this.currentNoteName}`;
 
-            // draw the note with VexFlow
             this._drawVexNote(this.currentNoteName);
 
             this.playSequenceFn = () => {
@@ -306,7 +370,7 @@ description: A web app to practice musical intonation.
         }
 
         _endGame() {
-            this.audio.stopActiveNote();
+            if (this.audio) this.audio.stopActiveNote();
             this.noteDiv.textContent = '🎉 Game Over';
             this.feedbackDiv.textContent = '';
             this.controls.style.display = 'none';
@@ -316,10 +380,8 @@ description: A web app to practice musical intonation.
     `;
         }
 
-        /* VexFlow helpers */
-
+        /* VexFlow helpers - responsive rendering */
         _mapToVexKey(noteName) {
-            // noteName like "C♯3" or "A3"
             const m = noteName.match(/^([A-G])(♯|#?)(\d)$/);
             if (!m) return {key: 'c/4', accidental: null};
             const [, letter, sharp, octave] = m;
@@ -330,52 +392,50 @@ description: A web app to practice musical intonation.
 
         _clearVex() {
             if (this.vfRenderer) {
-                // remove existing SVG element(s)
                 this.vexContainer.innerHTML = '';
                 this.vfRenderer = null;
+            } else {
+                this.vexContainer.innerHTML = '';
             }
         }
 
+        _redrawVexIfNeeded() {
+            if (this.currentNoteName) this._drawVexNote(this.currentNoteName);
+        }
+
         _drawVexNote(noteName) {
-            const VF = VexFlow;
+            // support multiple VexFlow globals (VexFlow, Vex)
+            const VF = window.VexFlow || (window.Vex && window.Vex.Flow) || window.Vex;
             if (!VF) {
-                console.error('VexFlow library not loaded');
+                // library not loaded — skip silently
                 return;
             }
 
             this._clearVex();
 
-            // create renderer (SVG)
+            const containerWidth = Math.max(120, Math.min(this.vexContainer.clientWidth || 200, 480));
+            const width = containerWidth;
+            const height = Math.round(Math.max(80, Math.min(160, this.vexContainer.clientHeight || 100)));
+
             this.vfRenderer = new VF.Renderer(this.vexContainer, VF.Renderer.Backends.SVG);
-            // size: width x height
-            const width = 200;
-            const height = 150;
             this.vfRenderer.resize(width, height);
             const context = this.vfRenderer.getContext();
 
-            // stave
-            const stave = new VF.Stave(0, 8, width - 10);
+            const stave = new VF.Stave(4, 8, width - 12);
             stave.addClef('treble');
             stave.setContext(context).draw();
 
             const {key, accidental} = this._mapToVexKey(noteName);
-
-            // create a quarter note
             const staveNote = new VF.StaveNote({clef: 'treble', keys: [key], duration: 'q'});
-
             if (accidental) {
                 staveNote.addModifier(new VF.Accidental(accidental), 0);
             }
 
-            // center and draw
             VF.Formatter.FormatAndDraw(context, stave, [staveNote]);
         }
     }
 
-    /* Instantiate controller and trainer */
-    const audioController = new AudioController();
-    const trainer = new IntonationTrainer(audioController);
-
-    /* Expose trainer.start() to the global scope so it can be called programmatically if desired */
+    /* Instantiate trainer (audio is created lazily on gesture/start) */
+    const trainer = new IntonationTrainer();
     window.IntonationTrainerInstance = trainer;
 </script>
