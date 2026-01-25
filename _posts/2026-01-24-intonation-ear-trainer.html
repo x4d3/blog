@@ -83,7 +83,6 @@ description: A web app to practice musical intonation.
         text-align: left;
     }
 
-    /* Make inputs and buttons larger on small screens */
     @media (max-width: 420px) {
         button {
             font-size: 20px;
@@ -95,6 +94,7 @@ description: A web app to practice musical intonation.
         }
     }
 </style>
+
 <div id="volumeControl">
     <label for="volumeSlider">Volume</label>
     <input type="range" id="volumeSlider" min="0" max="100" value="80"/>
@@ -116,22 +116,24 @@ description: A web app to practice musical intonation.
 <div id="summary"></div>
 
 <script type="module">
-    /* AudioController class */
+    /* AudioController */
     class AudioController {
         constructor() {
             this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             this.masterGain = this.audioCtx.createGain();
             this.masterGain.gain.value = 0.8;
             this.masterGain.connect(this.audioCtx.destination);
-
-            this.active = {}; // holds oscillator, gain, stopTimer when a note is playing
+            this.active = {};
             this.EPSILON = 0.0001;
             this.VOLUME_SMOOTH_TC = 0.03;
         }
 
         async resumeIfSuspended() {
-            if (this.audioCtx.state === 'suspended') {
-                await this.audioCtx.resume();
+            if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                try {
+                    await this.audioCtx.resume();
+                } catch (e) {
+                }
             }
         }
 
@@ -147,7 +149,6 @@ description: A web app to practice musical intonation.
                 clearTimeout(this.active.stopTimer);
                 delete this.active.stopTimer;
             }
-
             if (this.active.oscillator && this.active.gain) {
                 const now = this.audioCtx.currentTime;
                 try {
@@ -157,9 +158,7 @@ description: A web app to practice musical intonation.
                     g.linearRampToValueAtTime(this.EPSILON, now + 0.05);
                     this.active.oscillator.stop(now + 0.05);
                 } catch (e) {
-                    // ignore
                 }
-
                 setTimeout(() => {
                     try {
                         this.active.oscillator.disconnect();
@@ -170,7 +169,6 @@ description: A web app to practice musical intonation.
                     } catch (e) {
                     }
                 }, 120);
-
                 delete this.active.oscillator;
                 delete this.active.gain;
             }
@@ -178,23 +176,18 @@ description: A web app to practice musical intonation.
 
         playFrequency(freq, durationSeconds) {
             this.stopActiveNote();
-
             const osc = this.audioCtx.createOscillator();
             const gainNode = this.audioCtx.createGain();
             osc.type = 'sine';
             osc.frequency.value = freq;
-
             const now = this.audioCtx.currentTime;
             gainNode.gain.setValueAtTime(0.0, now);
             gainNode.gain.linearRampToValueAtTime(0.2, now + 0.01);
-
             osc.connect(gainNode);
             gainNode.connect(this.masterGain);
             osc.start();
-
             this.active.oscillator = osc;
             this.active.gain = gainNode;
-
             this.active.stopTimer = setTimeout(() => {
                 const t = this.audioCtx.currentTime;
                 try {
@@ -218,7 +211,7 @@ description: A web app to practice musical intonation.
                     delete this.active.gain;
                 }, 120);
                 delete this.active.stopTimer;
-            }, durationSeconds * 1000);
+            }, Math.max(10, durationSeconds * 1000));
         }
 
         noteToFrequency(note) {
@@ -231,10 +224,10 @@ description: A web app to practice musical intonation.
         }
     }
 
-    /* IntonationTrainer class (lazy AudioController) */
+    /* IntonationTrainer - audio created on Start gesture */
     class IntonationTrainer {
-        constructor(existingAudioController = null) {
-            this.audio = existingAudioController; // may be null; created on first gesture or start()
+        constructor() {
+            this.audio = null; // created on start (ensures iOS user gesture)
             this.startBtn = document.getElementById('startBtn');
             this.noteDiv = document.getElementById('note');
             this.vexContainer = document.getElementById('vex');
@@ -244,7 +237,6 @@ description: A web app to practice musical intonation.
             this.replayBtn = document.getElementById('replayBtn');
             this.flatBtn = document.getElementById('flatBtn');
             this.sharpBtn = document.getElementById('sharpBtn');
-
             this.volumeSlider = document.getElementById('volumeSlider');
             this.volumeLabel = document.getElementById('volumeLabel');
 
@@ -260,14 +252,17 @@ description: A web app to practice musical intonation.
 
             this._bindEvents();
             this._initVolumeUI();
-
-            // Ensure audio can be resumed on first gesture without forcing game start
-            this._attachFirstGestureResume();
             window.addEventListener('resize', () => this._redrawVexIfNeeded());
         }
 
         _bindEvents() {
-            this.startBtn.addEventListener('click', () => this.start());
+            // Use both touchend and click; touchend gets treated as a real user gesture on iPhones.
+            const startHandler = (e) => {
+                if (e && e.type === 'touchend') e.preventDefault(); // ensure it's a user gesture
+                this.start();
+            };
+            this.startBtn.addEventListener('click', startHandler);
+            this.startBtn.addEventListener('touchend', startHandler, {passive: false});
 
             this.volumeSlider.addEventListener('input', (e) => {
                 const v = Number(e.target.value);
@@ -275,8 +270,10 @@ description: A web app to practice musical intonation.
                 this.volumeLabel.textContent = `${v} %`;
             });
 
-            this.replayBtn.addEventListener('click', () => {
-                if (this.audio) this.audio.stopActiveNote();
+            this.replayBtn.addEventListener('click', async () => {
+                if (!this.audio) return;
+                await this.audio.resumeIfSuspended();
+                this.audio.stopActiveNote();
                 if (this.playSequenceFn) this.playSequenceFn();
             });
 
@@ -293,32 +290,14 @@ description: A web app to practice musical intonation.
         async _ensureAudio() {
             if (!this.audio) {
                 this.audio = new AudioController();
-                // set slider volume smoothly on creation
+                // apply slider volume immediately and then resume
                 this.audio.setVolumePercent(Number(this.volumeSlider.value));
-                this._initVolumeUI();
             }
             await this.audio.resumeIfSuspended();
         }
 
-        _attachFirstGestureResume() {
-            const handler = async () => {
-                try {
-                    await this._ensureAudio();
-                } catch (e) {
-                }
-                removeListeners();
-            };
-            const removeListeners = () => {
-                document.removeEventListener('pointerdown', handler);
-                document.removeEventListener('touchstart', handler);
-                document.removeEventListener('click', handler);
-            };
-            document.addEventListener('pointerdown', handler, {once: true});
-            document.addEventListener('touchstart', handler, {once: true, passive: true});
-            document.addEventListener('click', handler, {once: true});
-        }
-
         async start() {
+            // create and resume audio on the actual user gesture (Start button)
             await this._ensureAudio();
             this.startBtn.style.display = 'none';
             this.roundIndex = 0;
@@ -329,6 +308,7 @@ description: A web app to practice musical intonation.
         }
 
         nextRound() {
+            if (!this.audio) return;
             if (this.roundIndex >= 10) {
                 this._endGame();
                 return;
@@ -336,18 +316,14 @@ description: A web app to practice musical intonation.
             this.feedbackDiv.textContent = '';
             this.controls.style.display = 'none';
             this.roundIndex++;
-
             this.currentNoteName = this.notes[Math.floor(Math.random() * this.notes.length)];
             const baseFreq = this.audio.noteToFrequency(this.currentNoteName);
             this.correctAnswer = Math.random() < 0.5 ? 'flat' : 'sharp';
             const cents = 20;
             const factor = Math.pow(2, cents / 1200);
             this.detunedFrequency = this.correctAnswer === 'sharp' ? baseFreq * factor : baseFreq / factor;
-
             this.noteDiv.textContent = `Question ${this.roundIndex}: ${this.currentNoteName}`;
-
             this._drawVexNote(this.currentNoteName);
-
             this.playSequenceFn = () => {
                 this.audio.stopActiveNote();
                 this.audio.playFrequency(baseFreq, 2);
@@ -356,7 +332,6 @@ description: A web app to practice musical intonation.
                     this.controls.style.display = 'block';
                 }, 2200);
             };
-
             this.playSequenceFn();
         }
 
@@ -372,31 +347,21 @@ description: A web app to practice musical intonation.
         _endGame() {
             if (this.audio) this.audio.stopActiveNote();
             this.noteDiv.textContent = '🎉 Game Over';
-            this.feedbackDiv.textContent = '';
             this.controls.style.display = 'none';
-            this.summaryDiv.innerHTML = `
-      <strong>Final Score:</strong> ${this.score} / 10<br><br>
-      ${this.history.map(h => `Q${h.question}:${h.note} ${h.result ? '✅' : '❌'}`).join(' ')}
-    `;
+            this.summaryDiv.innerHTML = `<strong>Final Score:</strong> ${this.score} / 10<br><br>${this.history.map(h => `Q${h.question}:${h.note} ${h.result ? '✅' : '❌'}`).join(' ')}`;
         }
 
-        /* VexFlow helpers - responsive rendering */
+        /* VexFlow rendering */
         _mapToVexKey(noteName) {
             const m = noteName.match(/^([A-G])(♯|#?)(\d)$/);
             if (!m) return {key: 'c/4', accidental: null};
             const [, letter, sharp, octave] = m;
-            const key = `${letter.toLowerCase()}/${octave}`;
-            const accidental = sharp ? '#' : null;
-            return {key, accidental};
+            return {key: `${letter.toLowerCase()}/${octave}`, accidental: sharp ? '#' : null};
         }
 
         _clearVex() {
-            if (this.vfRenderer) {
-                this.vexContainer.innerHTML = '';
-                this.vfRenderer = null;
-            } else {
-                this.vexContainer.innerHTML = '';
-            }
+            this.vexContainer.innerHTML = '';
+            this.vfRenderer = null;
         }
 
         _redrawVexIfNeeded() {
@@ -404,38 +369,29 @@ description: A web app to practice musical intonation.
         }
 
         _drawVexNote(noteName) {
-            // support multiple VexFlow globals (VexFlow, Vex)
             const VF = window.VexFlow || (window.Vex && window.Vex.Flow) || window.Vex;
             if (!VF) {
                 // library not loaded — skip silently
                 return;
             }
-
             this._clearVex();
-
             const containerWidth = Math.max(120, Math.min(this.vexContainer.clientWidth || 200, 480));
             const width = containerWidth;
             const height = Math.round(Math.max(80, Math.min(160, this.vexContainer.clientHeight || 100)));
-
             this.vfRenderer = new VF.Renderer(this.vexContainer, VF.Renderer.Backends.SVG);
             this.vfRenderer.resize(width, height);
             const context = this.vfRenderer.getContext();
-
             const stave = new VF.Stave(4, 8, width - 12);
             stave.addClef('treble');
             stave.setContext(context).draw();
-
             const {key, accidental} = this._mapToVexKey(noteName);
             const staveNote = new VF.StaveNote({clef: 'treble', keys: [key], duration: 'q'});
-            if (accidental) {
-                staveNote.addModifier(new VF.Accidental(accidental), 0);
-            }
-
+            if (accidental) staveNote.addModifier(new VF.Accidental(accidental), 0);
             VF.Formatter.FormatAndDraw(context, stave, [staveNote]);
         }
     }
 
-    /* Instantiate trainer (audio is created lazily on gesture/start) */
+    /* Instantiate trainer (audio created on explicit Start) */
     const trainer = new IntonationTrainer();
     window.IntonationTrainerInstance = trainer;
 </script>
