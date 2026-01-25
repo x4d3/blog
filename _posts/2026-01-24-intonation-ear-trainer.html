@@ -6,7 +6,7 @@ category: Music
 description: A web app to practice musical intonation.
 ---
 <!-- Ensure VexFlow is available; adjust path as needed for your site -->
-<script src="{{"/assets/js/vexflow.js" | relative_url }}"></script>
+<script src='{{ "/assets/js/vexflow.js" | relative_url }}'></script>
 <style>
     :root {
         --control-size: 20px;
@@ -118,8 +118,8 @@ description: A web app to practice musical intonation.
 <script type="module">
     /* AudioController */
     class AudioController {
-        constructor() {
-            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        constructor(existingAudioCtx = null) {
+            this.audioCtx = existingAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
             this.masterGain = this.audioCtx.createGain();
             this.masterGain.gain.value = 0.8;
             this.masterGain.connect(this.audioCtx.destination);
@@ -128,12 +128,9 @@ description: A web app to practice musical intonation.
             this.VOLUME_SMOOTH_TC = 0.03;
         }
 
-        async resumeIfSuspended() {
+        resumeIfSuspended() {
             if (this.audioCtx && this.audioCtx.state === 'suspended') {
-                try {
-                    await this.audioCtx.resume();
-                } catch (e) {
-                }
+                try { this.audioCtx.resume(); } catch (e) {}
             }
         }
 
@@ -157,17 +154,10 @@ description: A web app to practice musical intonation.
                     g.setValueAtTime(g.value || this.EPSILON, now);
                     g.linearRampToValueAtTime(this.EPSILON, now + 0.05);
                     this.active.oscillator.stop(now + 0.05);
-                } catch (e) {
-                }
+                } catch (e) {}
                 setTimeout(() => {
-                    try {
-                        this.active.oscillator.disconnect();
-                    } catch (e) {
-                    }
-                    try {
-                        this.active.gain.disconnect();
-                    } catch (e) {
-                    }
+                    try { this.active.oscillator.disconnect(); } catch (e) {}
+                    try { this.active.gain.disconnect(); } catch (e) {}
                 }, 120);
                 delete this.active.oscillator;
                 delete this.active.gain;
@@ -196,17 +186,10 @@ description: A web app to practice musical intonation.
                     g.setValueAtTime(g.value || this.EPSILON, t);
                     g.linearRampToValueAtTime(this.EPSILON, t + 0.05);
                     osc.stop(t + 0.05);
-                } catch (e) {
-                }
+                } catch (e) {}
                 setTimeout(() => {
-                    try {
-                        osc.disconnect();
-                    } catch (e) {
-                    }
-                    try {
-                        gainNode.disconnect();
-                    } catch (e) {
-                    }
+                    try { osc.disconnect(); } catch (e) {}
+                    try { gainNode.disconnect(); } catch (e) {}
                     delete this.active.oscillator;
                     delete this.active.gain;
                 }, 120);
@@ -224,10 +207,10 @@ description: A web app to practice musical intonation.
         }
     }
 
-    /* IntonationTrainer - audio created on Start gesture */
+    /* IntonationTrainer - creates/unlocks audio inside Start gesture */
     class IntonationTrainer {
         constructor() {
-            this.audio = null; // created on start (ensures iOS user gesture)
+            this.audio = null; // created on Start (user gesture)
             this.startBtn = document.getElementById('startBtn');
             this.noteDiv = document.getElementById('note');
             this.vexContainer = document.getElementById('vex');
@@ -256,13 +239,12 @@ description: A web app to practice musical intonation.
         }
 
         _bindEvents() {
-            // Use both touchend and click; touchend gets treated as a real user gesture on iPhones.
             const startHandler = (e) => {
-                if (e && e.type === 'touchend') e.preventDefault(); // ensure it's a user gesture
+                if (e && e.type === 'touchend') e.preventDefault();
                 this.start();
             };
             this.startBtn.addEventListener('click', startHandler);
-            this.startBtn.addEventListener('touchend', startHandler, {passive: false});
+            this.startBtn.addEventListener('touchend', startHandler, { passive: false });
 
             this.volumeSlider.addEventListener('input', (e) => {
                 const v = Number(e.target.value);
@@ -272,7 +254,7 @@ description: A web app to practice musical intonation.
 
             this.replayBtn.addEventListener('click', async () => {
                 if (!this.audio) return;
-                await this.audio.resumeIfSuspended();
+                this.audio.resumeIfSuspended();
                 this.audio.stopActiveNote();
                 if (this.playSequenceFn) this.playSequenceFn();
             });
@@ -287,24 +269,33 @@ description: A web app to practice musical intonation.
             this.volumeLabel.textContent = `${value} %`;
         }
 
-        async _ensureAudio() {
-            if (!this.audio) {
-                this.audio = new AudioController();
-                // apply slider volume immediately and then resume
-                this.audio.setVolumePercent(Number(this.volumeSlider.value));
-            }
-            await this.audio.resumeIfSuspended();
+        _unlockAudioWithSilentBuffer(ctx) {
+            try {
+                const buffer = ctx.createBuffer(1, 1, ctx.sampleRate || 44100);
+                const src = ctx.createBufferSource();
+                src.buffer = buffer;
+                src.connect(ctx.destination);
+                src.start(0);
+            } catch (e) {}
+        }
+
+        async _ensureAudioInGesture() {
+            if (this.audio) return;
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this._unlockAudioWithSilentBuffer(ctx);
+            this.audio = new AudioController(ctx);
+            this.audio.setVolumePercent(Number(this.volumeSlider.value));
+            try { ctx.resume(); } catch (e) {}
         }
 
         async start() {
-            // create and resume audio on the actual user gesture (Start button)
-            await this._ensureAudio();
+            await this._ensureAudioInGesture();
             this.startBtn.style.display = 'none';
             this.roundIndex = 0;
             this.score = 0;
             this.history = [];
             this.summaryDiv.textContent = '';
-            this.nextRound();
+            setTimeout(() => this.nextRound(), 50);
         }
 
         nextRound() {
@@ -369,25 +360,25 @@ description: A web app to practice musical intonation.
         }
 
         _drawVexNote(noteName) {
-            const VF = window.VexFlow || (window.Vex && window.Vex.Flow) || window.Vex;
-            if (!VF) {
-                // library not loaded — skip silently
-                return;
-            }
+            const VF = window.Vex || (window.VexFlow && window.VexFlow.Flow) || (window.Vex && window.Vex.Flow) || window.VexFlow;
+            if (!VF) return;
+            const Flow = (window.Vex && window.Vex.Flow) ? window.Vex.Flow : (window.VexFlow && (window.VexFlow.Flow || window.VexFlow)) ? (window.VexFlow.Flow || window.VexFlow) : VF.Flow || VF;
+            if (!Flow) return;
+
             this._clearVex();
             const containerWidth = Math.max(120, Math.min(this.vexContainer.clientWidth || 200, 480));
             const width = containerWidth;
             const height = Math.round(Math.max(80, Math.min(160, this.vexContainer.clientHeight || 100)));
-            this.vfRenderer = new VF.Renderer(this.vexContainer, VF.Renderer.Backends.SVG);
+            this.vfRenderer = new Flow.Renderer(this.vexContainer, Flow.Renderer.Backends.SVG);
             this.vfRenderer.resize(width, height);
             const context = this.vfRenderer.getContext();
-            const stave = new VF.Stave(4, 8, width - 12);
+            const stave = new Flow.Stave(4, 8, width - 12);
             stave.addClef('treble');
             stave.setContext(context).draw();
             const {key, accidental} = this._mapToVexKey(noteName);
-            const staveNote = new VF.StaveNote({clef: 'treble', keys: [key], duration: 'q'});
-            if (accidental) staveNote.addModifier(new VF.Accidental(accidental), 0);
-            VF.Formatter.FormatAndDraw(context, stave, [staveNote]);
+            const staveNote = new Flow.StaveNote({clef: 'treble', keys: [key], duration: 'q'});
+            if (accidental) staveNote.addModifier(new Flow.Accidental(accidental), 0);
+            Flow.Formatter.FormatAndDraw(context, stave, [staveNote]);
         }
     }
 
