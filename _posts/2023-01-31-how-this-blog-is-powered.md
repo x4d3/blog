@@ -96,7 +96,7 @@ TEMPLATE = <<~EOS
   ---
   layout: post
   title: <%= title %>
-  category: Music Dev Random Literature Video Games Comics Management
+  category: Music Dev Random Literature Games Comics Management
   ---
 EOS
 

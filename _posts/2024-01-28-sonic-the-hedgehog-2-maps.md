@@ -2,7 +2,7 @@
 emoji: 🦔
 layout: post
 title: Sonic the Hedgehog 2 Maps
-category: Video Games
+category: Games
 description: High-resolution level maps for every zone in Sonic the Hedgehog 2, from Emerald Hill to Wing Fortress.
 ---
 

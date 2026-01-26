@@ -8,7 +8,7 @@ TEMPLATE = <<~EOS
   emoji: 🧦
   layout: post
   title: <%= title %>
-  category: Music Dev Random Literature Video Games Comics Management
+  category: Music Dev Random Literature Games Comics Management
   description: Description
   ---
 EOS
