@@ -15,6 +15,16 @@
     <link rel="icon" type="image/png" sizes="16x16" href="https://xade.eu/favicon/favicon-16x16.png">
     <link rel="manifest" href="https://xade.eu/favicon/site.webmanifest">
 
+    {% if page.sortable_table %}
+    <link rel="stylesheet" href="{{ "/assets/css/tablesort.css" | relative_url }}">
+    <script src="{{"/assets/js/tablesort.min.js" | relative_url }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            new Tablesort(document.querySelector('table'));
+        });
+    </script>
+    {% endif %}
+
     {% seo %}
 </head>
 <body>
