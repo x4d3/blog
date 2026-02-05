@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La M's Valentine Adventure</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="orientation-warning">
+        <div class="rotate-icon">📱 ↻</div>
+        <p>Please rotate your device to landscape mode</p>
+    </div>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Mobile Controls -->
+        <div id="controls">
+            <div id="dpad">
+                <button class="control-btn" id="btn-up">▲</button>
+                <button class="control-btn" id="btn-left">◄</button>
+                <button class="control-btn" id="btn-down">▼</button>
+                <button class="control-btn" id="btn-right">►</button>
+                <div class="dpad-center"></div>
+            </div>
+            <button id="jump-btn" class="action-btn">JUMP</button>
+        </div>
+
+        <!-- Valentine Scene -->
+        <div id="valentine-scene" class="hidden">
+            <div class="scene-content">
+                <div class="characters">
+                    <div class="character la-m"></div>
+                    <div class="heart">💕</div>
+                    <div class="character le-x"></div>
+                </div>
+                <div class="dialogue-box">
+                    <p class="dialogue-text">Will you be my Valentine, La M?</p>
+                    <div class="button-container">
+                        <button id="yes-btn" class="valentine-btn">YES</button>
+                        <button id="no-btn" class="valentine-btn">NO</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

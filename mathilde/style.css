@@ -1,0 +1,329 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    background: #000;
+    touch-action: none;
+}
+
+#orientation-warning {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    color: #fff;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 1000;
+    font-size: 24px;
+    text-align: center;
+}
+
+.rotate-icon {
+    font-size: 64px;
+    animation: rotate 2s infinite;
+}
+
+@keyframes rotate {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(90deg); }
+}
+
+@media (orientation: portrait) and (max-width: 768px) {
+    #orientation-warning {
+        display: flex;
+    }
+    #game-container {
+        display: none;
+    }
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: #87ceeb;
+}
+
+#gameCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Mobile Controls */
+#controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 250px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#dpad {
+    position: absolute;
+    left: 30px;
+    bottom: 30px;
+    width: 180px;
+    height: 180px;
+    pointer-events: all;
+}
+
+.control-btn {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(80, 80, 80, 0.95);
+    border: 5px solid #fff;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 26px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.8), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+}
+
+.control-btn:active {
+    background: rgba(200, 200, 200, 0.9);
+    transform: scale(0.95) translateY(2px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+
+#btn-up {
+    top: 0;
+    left: 60px;
+}
+
+#btn-left {
+    top: 60px;
+    left: 0;
+}
+
+#btn-right {
+    top: 60px;
+    right: 0;
+}
+
+#btn-down {
+    bottom: 0;
+    left: 60px;
+}
+
+.dpad-center {
+    position: absolute;
+    top: 60px;
+    left: 60px;
+    width: 60px;
+    height: 60px;
+    background: rgba(40, 40, 40, 0.8);
+    border: 4px solid rgba(255, 255, 255, 0.6);
+    border-radius: 4px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#jump-btn {
+    position: absolute;
+    right: 40px;
+    bottom: 60px;
+    width: 110px;
+    height: 110px;
+    background: rgba(255, 50, 50, 0.85);
+    border: 5px solid #fff;
+    color: #fff;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: all;
+    user-select: none;
+    box-shadow: 0 6px 0 rgba(150, 0, 0, 0.8);
+    transition: all 0.1s;
+}
+
+#jump-btn:active {
+    background: rgba(255, 150, 150, 0.95);
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(150, 0, 0, 0.8);
+}
+
+/* Valentine Scene */
+#valentine-scene {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #ff69b4, #ff1493);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+#valentine-scene.hidden {
+    display: none;
+}
+
+.scene-content {
+    text-align: center;
+    animation: fadeIn 1s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.characters {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.character {
+    width: 80px;
+    height: 100px;
+    position: relative;
+    animation: bounce 0.5s infinite alternate;
+}
+
+@keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-10px); }
+}
+
+.la-m {
+    background: linear-gradient(to bottom,
+        #8B4513 0%, #8B4513 25%,
+        #FFB6C1 25%, #FFB6C1 75%,
+        #000 75%, #000 100%);
+    border: 3px solid #000;
+    box-shadow: inset 0 30px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+.le-x {
+    background: linear-gradient(to bottom,
+        #8B4513 0%, #8B4513 25%,
+        #4169E1 25%, #4169E1 75%,
+        #000 75%, #000 100%);
+    border: 3px solid #000;
+    box-shadow: inset 0 30px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+.heart {
+    font-size: 48px;
+    animation: heartbeat 1s infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.dialogue-box {
+    background: #fff;
+    border: 5px solid #000;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 0 rgba(0, 0, 0, 0.5);
+    max-width: 500px;
+}
+
+.dialogue-text {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #000;
+}
+
+.button-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.valentine-btn {
+    padding: 15px 40px;
+    font-size: 24px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    border: 4px solid #000;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.5);
+}
+
+#yes-btn {
+    background: #00ff00;
+    color: #000;
+}
+
+#yes-btn:hover {
+    background: #00cc00;
+}
+
+#no-btn {
+    background: #ff0000;
+    color: #fff;
+}
+
+#no-btn:hover {
+    background: #cc0000;
+}
+
+.valentine-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Animations for the Valentine interaction */
+.grow {
+    animation: grow 0.3s forwards;
+}
+
+@keyframes grow {
+    to {
+        transform: scale(1.2);
+        padding: 20px 50px;
+    }
+}
+
+.run-away {
+    animation: runAway 0.5s forwards;
+}
+
+@keyframes runAway {
+    to {
+        transform: translate(200px, -100px) scale(0.5);
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+/* Desktop support */
+@media (min-width: 769px) {
+    #controls {
+        display: none;
+    }
+}
