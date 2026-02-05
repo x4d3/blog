@@ -135,6 +135,21 @@ resizeCanvas();
 initLevel();
 window.addEventListener('resize', resizeCanvas);
 
+// Handle orientation change for Safari mobile
+window.addEventListener('orientationchange', () => {
+    // Delay to allow Safari to update viewport
+    setTimeout(() => {
+        resizeCanvas();
+    }, 100);
+});
+
+// Handle Safari mobile viewport changes (tab bar showing/hiding)
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+        resizeCanvas();
+    });
+}
+
 // Controls
 window.addEventListener('keydown', (e) => {
     game.keys[e.key] = true;
@@ -729,39 +744,120 @@ function setupValentineButtons() {
     const yesBtn = document.getElementById('yes-btn');
     const noBtn = document.getElementById('no-btn');
     let noAttempts = 0;
+    let isProcessing = false;
 
-    noBtn.addEventListener('click', () => {
+    // Handle NO button click/touch
+    const handleNoClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (isProcessing) return;
+        isProcessing = true;
+
         noAttempts++;
 
+        // Visual feedback
+        noBtn.classList.add('pressed');
+        setTimeout(() => {
+            noBtn.classList.remove('pressed');
+        }, 150);
+
         if (noAttempts === 1) {
-            noBtn.classList.add('run-away');
-            yesBtn.classList.add('grow');
+            setTimeout(() => {
+                noBtn.classList.add('run-away');
+                yesBtn.classList.add('grow');
+            }, 100);
         }
 
         setTimeout(() => {
             if (noAttempts >= 1) {
                 noBtn.style.display = 'none';
-                yesBtn.style.transform = 'scale(1.5)';
-                yesBtn.style.padding = '25px 60px';
+                yesBtn.style.transform = 'scale(1.2)';
             }
-        }, 500);
-    });
+            isProcessing = false;
+        }, 600);
+    };
 
-    noBtn.addEventListener('mouseover', () => {
+    // Make NO button run away on hover/touch
+    const makeNoButtonEscape = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
         if (noAttempts > 0) {
-            const randomX = Math.random() * 200 - 100;
-            const randomY = Math.random() * 200 - 100;
+            const containerRect = document.querySelector('.button-container').getBoundingClientRect();
+            const maxMoveX = Math.min(containerRect.width * 0.3, 80);
+            const maxMoveY = Math.min(containerRect.height * 0.4, 40);
+            const randomX = (Math.random() * maxMoveX * 2) - maxMoveX;
+            const randomY = (Math.random() * maxMoveY * 2) - maxMoveY;
             noBtn.style.transform = `translate(${randomX}px, ${randomY}px)`;
+            noBtn.style.transition = 'transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
         }
-    });
+    };
 
-    yesBtn.addEventListener('click', () => {
-        document.querySelector('.dialogue-text').textContent = '💕 Happy Valentine\'s Day! 💕';
-        yesBtn.style.display = 'none';
-        noBtn.style.display = 'none';
+    // Handle YES button click/touch
+    const handleYesClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-        // Create celebration
-        createHearts();
+        if (isProcessing) return;
+        isProcessing = true;
+
+        // Visual feedback
+        yesBtn.classList.add('pressed');
+
+        setTimeout(() => {
+            document.querySelector('.dialogue-text').textContent = '💕 Happy Valentine\'s Day! 💕';
+            yesBtn.style.display = 'none';
+            noBtn.style.display = 'none';
+            createHearts();
+        }, 200);
+    };
+
+    // NO Button - use click for better Safari support
+    let noTouchStartTime = 0;
+
+    noBtn.addEventListener('touchstart', (e) => {
+        noTouchStartTime = Date.now();
+        makeNoButtonEscape(e);
+    }, { passive: false });
+
+    noBtn.addEventListener('touchend', (e) => {
+        const touchDuration = Date.now() - noTouchStartTime;
+        if (touchDuration < 300) { // Quick tap
+            handleNoClick(e);
+        }
+    }, { passive: false });
+
+    noBtn.addEventListener('click', handleNoClick);
+    noBtn.addEventListener('mouseover', makeNoButtonEscape);
+
+    // YES Button - use click for better Safari support
+    let yesTouchStartTime = 0;
+
+    yesBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        yesTouchStartTime = Date.now();
+        yesBtn.classList.add('pressed');
+    }, { passive: false });
+
+    yesBtn.addEventListener('touchend', (e) => {
+        const touchDuration = Date.now() - yesTouchStartTime;
+        if (touchDuration < 300) { // Quick tap
+            handleYesClick(e);
+        } else {
+            yesBtn.classList.remove('pressed');
+            isProcessing = false;
+        }
+    }, { passive: false });
+
+    yesBtn.addEventListener('click', handleYesClick);
+
+    // Prevent context menu on long press (Safari)
+    [yesBtn, noBtn].forEach(btn => {
+        btn.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
     });
 }
 
