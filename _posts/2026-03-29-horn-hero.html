@@ -1,0 +1,803 @@
+---
+emoji: 📯
+layout: post
+title: Horn Hero
+category: Music
+description: Sight-read notes for French horn and score points for pitch accuracy.
+---
+<script src='{{ "/assets/js/vexflow.js" | relative_url }}'></script>
+<style>
+  #game-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+    text-align: center;
+  }
+
+  /* ── Screens ── */
+  .screen { width: 100%; display: none; flex-direction: column; align-items: center; }
+  .screen.active { display: flex; }
+
+  /* ── Idle ── */
+  #idle-desc {
+    font-size: 15px;
+    color: var(--text-light);
+    max-width: 340px;
+    line-height: 1.6;
+    margin: 0 0 20px;
+  }
+
+  /* ── Game ── */
+  #progress {
+    font-size: 13px;
+    color: var(--text-light);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  #score-display {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+
+  #vex-wrap {
+    width: 100%;
+    max-width: 360px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 0 0;
+    margin-bottom: 4px;
+    overflow: hidden;
+  }
+
+  #vex { width: 100%; }
+
+  #note-hint {
+    font-size: 12px;
+    color: var(--text-light);
+    margin: 2px 0 12px;
+  }
+
+  /* timer bar */
+  #timer-wrap {
+    width: 100%;
+    max-width: 360px;
+    margin-bottom: 10px;
+  }
+
+  #timer-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+
+  #timer-secs {
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  #timer-track {
+    width: 100%;
+    height: 10px;
+    background: var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  #timer-bar {
+    height: 100%;
+    width: 100%;
+    background: #27ae60;
+    border-radius: 5px;
+    transition: background 0.3s;
+  }
+
+  /* mic level */
+  #mic-track {
+    width: 100%;
+    max-width: 360px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  #mic-bar {
+    height: 100%;
+    width: 0%;
+    background: #27ae60;
+    border-radius: 2px;
+    transition: width 0.05s;
+  }
+
+  #feedback {
+    font-size: 28px;
+    font-weight: bold;
+    min-height: 38px;
+    margin-bottom: 6px;
+  }
+
+  #feedback.perfect  { color: #27ae60; }
+  #feedback.good     { color: #2ecc71; }
+  #feedback.close    { color: #f39c12; }
+  #feedback.wrong    { color: #e74c3c; }
+  #feedback.timeout  { color: var(--text-light); }
+  #feedback.ready    { color: var(--text-light); font-style: italic; letter-spacing: 1px; }
+
+  #cents-result {
+    font-size: 14px;
+    color: var(--text-light);
+    min-height: 20px;
+    margin-bottom: 12px;
+  }
+
+  /* ── Results ── */
+  #final-score {
+    font-size: 52px;
+    font-weight: bold;
+    line-height: 1;
+    margin: 8px 0 4px;
+  }
+
+  #final-label {
+    font-size: 14px;
+    color: var(--text-light);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  #breakdown {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 2;
+    margin-bottom: 20px;
+  }
+
+  #breakdown b { color: var(--text); }
+
+  /* ── Shared button ── */
+  .action-btn {
+    font-size: 20px;
+    padding: 12px 44px;
+    background: #e74c3c !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 8px 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .action-btn:hover  { background: #c0392b !important; }
+  .action-btn:active { background: #a93226 !important; }
+
+  #error-msg {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  #difficulty-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .diff-btn {
+    padding: 6px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--accent-bg);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 14px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .diff-btn:hover { filter: brightness(0.92) !important; }
+  .diff-btn.selected {
+    background: #e74c3c !important;
+    color: #fff !important;
+    border-color: #e74c3c !important;
+  }
+
+  #difficulty-label {
+    font-size: 12px;
+    color: var(--text-light);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+</style>
+
+<div id="game-wrap">
+
+  <!-- Idle -->
+  <div id="idle-screen" class="screen active">
+    <p id="idle-desc">
+      Play the displayed note on your <strong>French horn</strong>.<br>
+      Hold the note steady — you'll be scored on pitch accuracy.<br>
+      <small>Written notes (treble clef, horn in F).</small>
+    </p>
+    <div id="difficulty-row">
+      <button class="diff-btn selected" data-diff="easy">Easy</button>
+      <button class="diff-btn"          data-diff="medium">Medium</button>
+      <button class="diff-btn"          data-diff="hard">Hard</button>
+    </div>
+    <div id="error-msg"></div>
+    <button class="action-btn" id="start-btn">Start game</button>
+  </div>
+
+  <!-- Game -->
+  <div id="game-screen" class="screen">
+    <div id="progress">Note <span id="note-num">1</span> / 10</div>
+    <div id="score-display">Score: <span id="score">0</span></div>
+
+    <div id="timer-wrap">
+      <div id="timer-label"><span>Time</span><span id="timer-secs">6s</span></div>
+      <div id="timer-track"><div id="timer-bar"></div></div>
+    </div>
+
+    <div id="vex-wrap"><div id="vex"></div></div>
+    <div id="note-hint"></div>
+    <div id="mic-track"><div id="mic-bar"></div></div>
+
+    <div id="feedback"></div>
+    <div id="cents-result"></div>
+  </div>
+
+  <!-- Results -->
+  <div id="results-screen" class="screen">
+    <div id="difficulty-label"></div>
+    <div id="final-score"></div>
+    <div id="final-label">points</div>
+    <div id="breakdown"></div>
+    <button class="action-btn" id="restart-btn">Play again</button>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  // ── Note pools: written French horn notes (treble clef, horn in F) ───────────
+  // midi = written MIDI; concert = midi − 7 (sounds a perfect 5th lower)
+  // key uses VexFlow format; acc is the accidental modifier or null
+  const NOTE_POOLS = {
+    // Easy: C4–G5, naturals only
+    easy: [
+      { key: 'c/4',  acc: null, midi: 60, label: 'C4'  },
+      { key: 'd/4',  acc: null, midi: 62, label: 'D4'  },
+      { key: 'e/4',  acc: null, midi: 64, label: 'E4'  },
+      { key: 'f/4',  acc: null, midi: 65, label: 'F4'  },
+      { key: 'g/4',  acc: null, midi: 67, label: 'G4'  },
+      { key: 'a/4',  acc: null, midi: 69, label: 'A4'  },
+      { key: 'b/4',  acc: null, midi: 71, label: 'B4'  },
+      { key: 'c/5',  acc: null, midi: 72, label: 'C5'  },
+      { key: 'd/5',  acc: null, midi: 74, label: 'D5'  },
+      { key: 'e/5',  acc: null, midi: 76, label: 'E5'  },
+      { key: 'f/5',  acc: null, midi: 77, label: 'F5'  },
+      { key: 'g/5',  acc: null, midi: 79, label: 'G5'  },
+    ],
+    // Medium: F3–C6, naturals + common horn accidentals (Bb, Eb, F#, Ab)
+    medium: [
+      { key: 'f/3',  acc: null, midi: 53, label: 'F3'  },
+      { key: 'g/3',  acc: null, midi: 55, label: 'G3'  },
+      { key: 'a/3',  acc: null, midi: 57, label: 'A3'  },
+      { key: 'bb/3', acc: 'b',  midi: 58, label: 'Bb3' },
+      { key: 'b/3',  acc: null, midi: 59, label: 'B3'  },
+      { key: 'c/4',  acc: null, midi: 60, label: 'C4'  },
+      { key: 'd/4',  acc: null, midi: 62, label: 'D4'  },
+      { key: 'eb/4', acc: 'b',  midi: 63, label: 'Eb4' },
+      { key: 'e/4',  acc: null, midi: 64, label: 'E4'  },
+      { key: 'f/4',  acc: null, midi: 65, label: 'F4'  },
+      { key: 'f#/4', acc: '#',  midi: 66, label: 'F#4' },
+      { key: 'g/4',  acc: null, midi: 67, label: 'G4'  },
+      { key: 'ab/4', acc: 'b',  midi: 68, label: 'Ab4' },
+      { key: 'a/4',  acc: null, midi: 69, label: 'A4'  },
+      { key: 'bb/4', acc: 'b',  midi: 70, label: 'Bb4' },
+      { key: 'b/4',  acc: null, midi: 71, label: 'B4'  },
+      { key: 'c/5',  acc: null, midi: 72, label: 'C5'  },
+      { key: 'd/5',  acc: null, midi: 74, label: 'D5'  },
+      { key: 'eb/5', acc: 'b',  midi: 75, label: 'Eb5' },
+      { key: 'e/5',  acc: null, midi: 76, label: 'E5'  },
+      { key: 'f/5',  acc: null, midi: 77, label: 'F5'  },
+      { key: 'f#/5', acc: '#',  midi: 78, label: 'F#5' },
+      { key: 'g/5',  acc: null, midi: 79, label: 'G5'  },
+      { key: 'ab/5', acc: 'b',  midi: 80, label: 'Ab5' },
+      { key: 'a/5',  acc: null, midi: 81, label: 'A5'  },
+    ],
+    // Hard: full practical range C3–F6, fully chromatic
+    hard: [
+      { key: 'c/3',  acc: null, midi: 48, label: 'C3'  },
+      { key: 'db/3', acc: 'b',  midi: 49, label: 'Db3' },
+      { key: 'd/3',  acc: null, midi: 50, label: 'D3'  },
+      { key: 'eb/3', acc: 'b',  midi: 51, label: 'Eb3' },
+      { key: 'e/3',  acc: null, midi: 52, label: 'E3'  },
+      { key: 'f/3',  acc: null, midi: 53, label: 'F3'  },
+      { key: 'f#/3', acc: '#',  midi: 54, label: 'F#3' },
+      { key: 'g/3',  acc: null, midi: 55, label: 'G3'  },
+      { key: 'ab/3', acc: 'b',  midi: 56, label: 'Ab3' },
+      { key: 'a/3',  acc: null, midi: 57, label: 'A3'  },
+      { key: 'bb/3', acc: 'b',  midi: 58, label: 'Bb3' },
+      { key: 'b/3',  acc: null, midi: 59, label: 'B3'  },
+      { key: 'c/4',  acc: null, midi: 60, label: 'C4'  },
+      { key: 'db/4', acc: 'b',  midi: 61, label: 'Db4' },
+      { key: 'd/4',  acc: null, midi: 62, label: 'D4'  },
+      { key: 'eb/4', acc: 'b',  midi: 63, label: 'Eb4' },
+      { key: 'e/4',  acc: null, midi: 64, label: 'E4'  },
+      { key: 'f/4',  acc: null, midi: 65, label: 'F4'  },
+      { key: 'f#/4', acc: '#',  midi: 66, label: 'F#4' },
+      { key: 'g/4',  acc: null, midi: 67, label: 'G4'  },
+      { key: 'ab/4', acc: 'b',  midi: 68, label: 'Ab4' },
+      { key: 'a/4',  acc: null, midi: 69, label: 'A4'  },
+      { key: 'bb/4', acc: 'b',  midi: 70, label: 'Bb4' },
+      { key: 'b/4',  acc: null, midi: 71, label: 'B4'  },
+      { key: 'c/5',  acc: null, midi: 72, label: 'C5'  },
+      { key: 'db/5', acc: 'b',  midi: 73, label: 'Db5' },
+      { key: 'd/5',  acc: null, midi: 74, label: 'D5'  },
+      { key: 'eb/5', acc: 'b',  midi: 75, label: 'Eb5' },
+      { key: 'e/5',  acc: null, midi: 76, label: 'E5'  },
+      { key: 'f/5',  acc: null, midi: 77, label: 'F5'  },
+      { key: 'f#/5', acc: '#',  midi: 78, label: 'F#5' },
+      { key: 'g/5',  acc: null, midi: 79, label: 'G5'  },
+      { key: 'ab/5', acc: 'b',  midi: 80, label: 'Ab5' },
+      { key: 'a/5',  acc: null, midi: 81, label: 'A5'  },
+      { key: 'bb/5', acc: 'b',  midi: 82, label: 'Bb5' },
+      { key: 'b/5',  acc: null, midi: 83, label: 'B5'  },
+      { key: 'c/6',  acc: null, midi: 84, label: 'C6'  },
+      { key: 'd/6',  acc: null, midi: 86, label: 'D6'  },
+    ],
+  };
+
+  const TOTAL_NOTES  = 10;
+  const NOTE_TIME_MS = 6000;   // seconds to play each note
+  const SUSTAIN_FRAMES = 8;    // consecutive frames to confirm note
+  const BUFFER_SIZE    = 4096;
+  const A4_FREQ        = 440;
+  const A4_MIDI        = 69;
+  const SILENCE_RMS    = 0.012;
+  const HORN_TRANSPOSE = 7;    // concert → written: add 7 semitones
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let difficulty  = 'easy';
+  let state       = 'idle';   // idle | listening | feedback | done
+  let audioCtx    = null;
+  let analyser    = null;
+  let sourceNode  = null;
+  let animFrame   = null;
+  let timerStart  = 0;
+  let timerHandle = null;
+  let consecFrames  = 0;
+  let lastSemitone  = -1;
+  let roundIndex    = 0;
+  let totalScore    = 0;
+  let currentNote   = null;
+  let history       = [];
+  let pendingNote   = false;  // lockout after detection
+
+  // ── VexFlow helper ─────────────────────────────────────────────────────────
+  function getFlow() {
+    if (window.Vex && window.Vex.Flow) return window.Vex.Flow;
+    if (window.VexFlow && window.VexFlow.Flow) return window.VexFlow.Flow;
+    if (window.VexFlow) return window.VexFlow;
+    return null;
+  }
+
+  function makeStave(container, Flow) {
+    container.innerHTML = '';
+    const w = Math.min(container.clientWidth || 320, 360);
+    const h = 180;
+    const renderer = new Flow.Renderer(container, Flow.Renderer.Backends.SVG);
+    renderer.resize(w, h);
+    const ctx = renderer.getContext();
+    const stave = new Flow.Stave(10, 50, w - 20);
+    stave.addClef('treble');
+    stave.setContext(ctx).draw();
+    return { ctx, stave, w };
+  }
+
+  function drawNote(note) {
+    const Flow = getFlow();
+    if (!Flow) return;
+    const container = document.getElementById('vex');
+    const { ctx, stave } = makeStave(container, Flow);
+    const sn = new Flow.StaveNote({ clef: 'treble', keys: [note.key], duration: 'w' });
+    if (note.acc) sn.addModifier(new Flow.Accidental(note.acc), 0);
+    Flow.Formatter.FormatAndDraw(ctx, stave, [sn]);
+  }
+
+  function drawNoteWithWrong(targetNote, wrongNote) {
+    const Flow = getFlow();
+    if (!Flow) return;
+    const container = document.getElementById('vex');
+    const { ctx, stave, w } = makeStave(container, Flow);
+
+    const sn1 = new Flow.StaveNote({ clef: 'treble', keys: [targetNote.key], duration: 'w' });
+    if (targetNote.acc) sn1.addModifier(new Flow.Accidental(targetNote.acc), 0);
+
+    const sn2 = new Flow.StaveNote({ clef: 'treble', keys: [wrongNote.key], duration: 'w' });
+    sn2.setStyle({ fillStyle: '#e74c3c', strokeStyle: '#e74c3c' });
+    if (wrongNote.acc) {
+      const acc = new Flow.Accidental(wrongNote.acc);
+      acc.setStyle({ fillStyle: '#e74c3c', strokeStyle: '#e74c3c' });
+      sn2.addModifier(acc, 0);
+    }
+
+    const v1 = new Flow.Voice({ num_beats: 4, beat_value: 4 }).setStrict(false);
+    const v2 = new Flow.Voice({ num_beats: 4, beat_value: 4 }).setStrict(false);
+    v1.addTickables([sn1]);
+    v2.addTickables([sn2]);
+    new Flow.Formatter().joinVoices([v1, v2]).format([v1, v2], w - 50);
+    v1.draw(ctx, stave);
+    v2.draw(ctx, stave);
+  }
+
+  // ── Pitch detection ────────────────────────────────────────────────────────
+  function detectPitch(buf, sampleRate) {
+    const SIZE = buf.length;
+    const HALF = Math.floor(SIZE / 2);
+    let rms = 0;
+    for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+    rms = Math.sqrt(rms / SIZE);
+    if (rms < SILENCE_RMS) return -1;
+
+    let bestOffset = -1, bestCorr = 0, lastCorr = 1;
+    let foundGood = false;
+    const corrs = new Float32Array(HALF);
+
+    for (let o = 1; o < HALF; o++) {
+      let c = 0, n0 = 0, no = 0;
+      for (let i = 0; i < HALF; i++) {
+        c  += buf[i] * buf[i + o];
+        n0 += buf[i] * buf[i];
+        no += buf[i + o] * buf[i + o];
+      }
+      const denom = Math.sqrt(n0 * no);
+      corrs[o] = denom > 0 ? c / denom : 0;
+
+      if (corrs[o] > 0.9 && corrs[o] > lastCorr) {
+        foundGood = true;
+        if (corrs[o] > bestCorr) { bestCorr = corrs[o]; bestOffset = o; }
+      } else if (foundGood) {
+        if (bestOffset > 1 && bestOffset < HALF - 1) {
+          const shift = (corrs[bestOffset + 1] - corrs[bestOffset - 1])
+                      / (2 * (2 * corrs[bestOffset] - corrs[bestOffset - 1] - corrs[bestOffset + 1]));
+          return sampleRate / (bestOffset + shift);
+        }
+        return sampleRate / bestOffset;
+      }
+      lastCorr = corrs[o];
+    }
+    if (bestCorr > 0.01 && bestOffset > 0) return sampleRate / bestOffset;
+    return -1;
+  }
+
+  function freqToMidi(freq) {
+    return A4_MIDI + 12 * Math.log2(freq / A4_FREQ);
+  }
+
+  // ── RMS helper for mic bar ─────────────────────────────────────────────────
+  function getRms(buf) {
+    let s = 0;
+    for (let i = 0; i < buf.length; i++) s += buf[i] * buf[i];
+    return Math.sqrt(s / buf.length);
+  }
+
+  // ── Scoring ────────────────────────────────────────────────────────────────
+  function scoreNote(centsDev) {
+    const abs = Math.abs(centsDev);
+    if (abs <= 10) return { label: 'Perfect!',  cls: 'perfect', pts: 100 };
+    if (abs <= 25) return { label: 'Good',       cls: 'good',    pts:  70 };
+    if (abs <= 50) return { label: 'Close',      cls: 'close',   pts:  40 };
+    return null; // wrong note
+  }
+
+  // ── Evaluate a detected pitch ──────────────────────────────────────────────
+  function evaluate(writtenMidiFloat) {
+    if (pendingNote) return;
+    pendingNote = true;
+    state = 'feedback';
+    clearTimeout(timerHandle);
+    cancelAnimationFrame(animFrame);
+
+    const target = currentNote.midi;
+    const rounded = Math.round(writtenMidiFloat);
+    const cents   = Math.round((writtenMidiFloat - rounded) * 100);
+
+    const feedbackEl   = document.getElementById('feedback');
+    const centsEl      = document.getElementById('cents-result');
+    const timerBar     = document.getElementById('timer-bar');
+    timerBar.style.width = '0%';
+    document.getElementById('timer-secs').textContent = '0s';
+
+    if (rounded === target) {
+      const result = scoreNote(cents);
+      if (result) {
+        totalScore += result.pts;
+        history.push({ note: currentNote.label, result: result.label, pts: result.pts, cents });
+        feedbackEl.textContent = result.label;
+        feedbackEl.className   = result.cls;
+        centsEl.textContent    = (cents >= 0 ? '+' : '') + cents + '¢';
+      } else {
+        // Within correct note but > 50¢ shouldn't happen since rounded === target
+        history.push({ note: currentNote.label, result: 'Close', pts: 40, cents });
+        totalScore += 40;
+        feedbackEl.textContent = 'Close';
+        feedbackEl.className   = 'close';
+        centsEl.textContent    = (cents >= 0 ? '+' : '') + cents + '¢';
+      }
+    } else {
+      const playedEntry = midiToNoteEntry(rounded);
+      history.push({ note: currentNote.label, result: 'Wrong', pts: 0, cents: null });
+      feedbackEl.textContent = 'Played ' + playedEntry.label;
+      feedbackEl.className   = 'wrong';
+      centsEl.textContent    = 'Expected ' + currentNote.label;
+      drawNoteWithWrong(currentNote, playedEntry);
+    }
+
+    document.getElementById('score').textContent = totalScore;
+    scheduleNext();
+  }
+
+  function timeout() {
+    if (state !== 'listening') return;
+    state = 'feedback';
+    cancelAnimationFrame(animFrame);
+    history.push({ note: currentNote.label, result: "Time's up", pts: 0, cents: null });
+    const feedbackEl = document.getElementById('feedback');
+    feedbackEl.textContent = "Time's up";
+    feedbackEl.className   = 'timeout';
+    document.getElementById('cents-result').textContent = '';
+    document.getElementById('timer-bar').style.width = '0%';
+    scheduleNext();
+  }
+
+  function scheduleNext() {
+    const feedbackEl = document.getElementById('feedback');
+    const centsEl    = document.getElementById('cents-result');
+    setTimeout(() => {
+      feedbackEl.textContent = 'Get ready…';
+      feedbackEl.className   = 'ready';
+      centsEl.textContent    = '';
+      setTimeout(() => {
+        feedbackEl.textContent = '';
+        feedbackEl.className   = '';
+        nextNote();
+      }, 1500);
+    }, 1400);
+  }
+
+  // ── Game flow ──────────────────────────────────────────────────────────────
+  function pickNote() {
+    const pool = NOTE_POOLS[difficulty];
+    let n;
+    do { n = pool[Math.floor(Math.random() * pool.length)]; }
+    while (currentNote && n.midi === currentNote.midi);
+    return n;
+  }
+
+  function showNote(note) {
+    drawNote(note);
+    document.getElementById('note-hint').textContent =
+      note.label + ' written  ·  sounds ' + concertLabel(note.midi);
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className   = '';
+    document.getElementById('cents-result').textContent = '';
+    document.getElementById('mic-bar').style.width = '0%';
+  }
+
+  function writtenMidiLabel(midi) {
+    const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    const idx   = ((midi % 12) + 12) % 12;
+    const oct   = Math.floor(midi / 12) - 1;
+    return names[idx] + oct;
+  }
+
+  function midiToNoteEntry(midi) {
+    const table = [
+      { k: 'c',  a: null }, { k: 'db', a: 'b'  }, { k: 'd',  a: null },
+      { k: 'eb', a: 'b'  }, { k: 'e',  a: null }, { k: 'f',  a: null },
+      { k: 'f#', a: '#'  }, { k: 'g',  a: null }, { k: 'ab', a: 'b'  },
+      { k: 'a',  a: null }, { k: 'bb', a: 'b'  }, { k: 'b',  a: null },
+    ];
+    const pc  = ((midi % 12) + 12) % 12;
+    const oct = Math.floor(midi / 12) - 1;
+    const { k, a } = table[pc];
+    return { key: `${k}/${oct}`, acc: a, midi, label: writtenMidiLabel(midi) };
+  }
+
+  function concertLabel(writtenMidi) {
+    const cMidi = writtenMidi - HORN_TRANSPOSE;
+    const names  = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    const idx    = ((cMidi % 12) + 12) % 12;
+    const oct    = Math.floor(cMidi / 12) - 1;
+    return names[idx] + oct;
+  }
+
+  function startTimer() {
+    timerStart = performance.now();
+    const bar  = document.getElementById('timer-bar');
+    const secs = document.getElementById('timer-secs');
+    bar.style.transition = 'none';
+    bar.style.width      = '100%';
+    bar.style.background = '#27ae60';
+
+    function tick() {
+      const elapsed   = performance.now() - timerStart;
+      const remaining = Math.max(0, NOTE_TIME_MS - elapsed);
+      const pct       = (remaining / NOTE_TIME_MS) * 100;
+      bar.style.width      = pct + '%';
+      bar.style.background = pct < 30 ? '#e74c3c' : pct < 55 ? '#f39c12' : '#27ae60';
+      secs.textContent     = Math.ceil(remaining / 1000) + 's';
+      if (remaining > 0 && state === 'listening') requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    timerHandle = setTimeout(timeout, NOTE_TIME_MS);
+  }
+
+  function nextNote() {
+    roundIndex++;
+    if (roundIndex > TOTAL_NOTES) {
+      endGame();
+      return;
+    }
+    pendingNote     = false;
+    consecFrames    = 0;
+    lastSemitone    = -1;
+    currentNote     = pickNote();
+    state           = 'listening';
+
+    document.getElementById('note-num').textContent = roundIndex;
+    showNote(currentNote);
+    startTimer();
+    listenLoop();
+  }
+
+  // ── Audio loop ─────────────────────────────────────────────────────────────
+  function listenLoop() {
+    if (state !== 'listening') return;
+    animFrame = requestAnimationFrame(listenLoop);
+
+    const buf = new Float32Array(BUFFER_SIZE);
+    analyser.getFloatTimeDomainData(buf);
+
+    // Mic level bar
+    const rms = getRms(buf);
+    const micPct = Math.min(100, rms * 600);
+    document.getElementById('mic-bar').style.width = micPct + '%';
+
+    // Pitch
+    const freq = detectPitch(buf, audioCtx.sampleRate);
+    if (freq > 0) {
+      const concertMidi = freqToMidi(freq);
+      const writtenMidi = concertMidi + HORN_TRANSPOSE;
+      const semitone    = Math.round(writtenMidi);
+
+      if (semitone === lastSemitone) {
+        consecFrames++;
+        if (consecFrames >= SUSTAIN_FRAMES) {
+          evaluate(writtenMidi);
+        }
+      } else {
+        lastSemitone  = semitone;
+        consecFrames  = 1;
+      }
+    } else {
+      consecFrames = 0;
+      lastSemitone = -1;
+    }
+  }
+
+  // ── End game ───────────────────────────────────────────────────────────────
+  function endGame() {
+    state = 'done';
+    stopAudio();
+    show('results-screen');
+
+    const maxPts = TOTAL_NOTES * 100;
+    document.getElementById('difficulty-label').textContent =
+      difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+    document.getElementById('final-score').textContent = totalScore;
+    document.getElementById('final-label').textContent =
+      'points out of ' + maxPts;
+
+    const counts = { Perfect: 0, Good: 0, Close: 0, Wrong: 0, "Time's up": 0 };
+    history.forEach(h => {
+      const k = h.result in counts ? h.result : 'Wrong';
+      counts[k]++;
+    });
+
+    document.getElementById('breakdown').innerHTML =
+      Object.entries(counts)
+        .filter(([, v]) => v > 0)
+        .map(([k, v]) => `<b>${v}</b> ${k}`)
+        .join(' &nbsp;·&nbsp; ');
+  }
+
+  // ── Audio helpers ──────────────────────────────────────────────────────────
+  async function startAudio() {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = BUFFER_SIZE * 2;
+    sourceNode = audioCtx.createMediaStreamSource(stream);
+    sourceNode.connect(analyser);
+  }
+
+  function stopAudio() {
+    cancelAnimationFrame(animFrame);
+    clearTimeout(timerHandle);
+    if (sourceNode) { sourceNode.disconnect(); sourceNode = null; }
+    if (audioCtx)   { audioCtx.close(); audioCtx = null; }
+    analyser = null;
+  }
+
+  // ── Screen helpers ─────────────────────────────────────────────────────────
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ── Difficulty buttons ─────────────────────────────────────────────────────
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      difficulty = btn.dataset.diff;
+    });
+  });
+
+  // ── Wire up ────────────────────────────────────────────────────────────────
+  document.getElementById('start-btn').addEventListener('click', async () => {
+    const errEl = document.getElementById('error-msg');
+    errEl.textContent = '';
+    try {
+      await startAudio();
+    } catch (e) {
+      errEl.textContent = 'Microphone access denied or unavailable.';
+      return;
+    }
+    roundIndex = 0;
+    totalScore = 0;
+    history    = [];
+    currentNote = null;
+    show('game-screen');
+    // Small delay so VexFlow container has layout
+    setTimeout(nextNote, 80);
+  });
+
+  document.getElementById('restart-btn').addEventListener('click', async () => {
+    const errEl = document.getElementById('error-msg');
+    errEl.textContent = '';
+    stopAudio();
+    try {
+      await startAudio();
+    } catch (e) {
+      show('idle-screen');
+      errEl.textContent = 'Microphone access denied or unavailable.';
+      return;
+    }
+    roundIndex  = 0;
+    totalScore  = 0;
+    history     = [];
+    currentNote = null;
+    show('game-screen');
+    setTimeout(nextNote, 80);
+  });
+})();
+</script>

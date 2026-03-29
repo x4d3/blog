@@ -1,0 +1,459 @@
+---
+emoji: 🎵
+layout: post
+title: Tuner
+category: Music
+description: A chromatic tuner with transposed instrument support.
+---
+<style>
+  #tuner-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+  }
+
+  #instrument-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+
+  #instrument-row label {
+    font-size: 14px;
+    color: var(--text-light);
+  }
+
+  #instrument-select {
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--accent-bg);
+    color: var(--text);
+  }
+
+  #readout {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  #gauge-wrap {
+    margin: 8px 0;
+  }
+
+  #gauge-canvas {
+    display: block;
+  }
+
+  #note-display {
+    font-size: 64px;
+    font-weight: bold;
+    line-height: 1;
+    margin: 4px 0 0;
+    color: var(--text);
+    letter-spacing: -2px;
+  }
+
+  #octave-display {
+    font-size: 28px;
+    color: var(--text-light);
+    vertical-align: super;
+  }
+
+  #freq-display {
+    font-size: 16px;
+    color: var(--text-light);
+    margin: 2px 0 8px;
+  }
+
+  #cents-display {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  #cents-display.in-tune { color: #27ae60; }
+  #cents-display.sharp   { color: #e74c3c; }
+  #cents-display.flat    { color: #2980b9; }
+
+  #details-box {
+    text-align: left;
+    font-size: 13px;
+    color: var(--text-light);
+    background: var(--accent-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin: 4px 0 14px;
+    min-width: 220px;
+    line-height: 1.8;
+  }
+
+  #details-box span { color: var(--text); font-weight: 600; }
+
+  #start-btn {
+    font-size: 20px;
+    padding: 12px 44px;
+    background: #e74c3c !important;
+    color: #fff !important;
+    border: none !important;
+    margin: 8px 0 16px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #start-btn:hover  { background: #c0392b !important; }
+  #start-btn:active { background: #a93226 !important; }
+  #start-btn.running       { background: var(--text-light) !important; color: var(--bg) !important; }
+  #start-btn.running:hover { filter: brightness(0.85) !important; }
+
+  #error-msg {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+</style>
+
+<div id="tuner-wrap">
+  <div id="instrument-row">
+    <label for="instrument-select">Instrument:</label>
+    <select id="instrument-select">
+      <option value="0">Concert pitch (C)</option>
+      <option value="2">Bb — Trumpet, Clarinet, Tenor/Soprano Sax</option>
+      <option value="9">Eb — Alto Sax, Baritone Sax</option>
+      <option value="7" selected>F — French Horn, English Horn</option>
+      <option value="3">A — Clarinet in A</option>
+    </select>
+  </div>
+
+  <div id="error-msg"></div>
+  <button id="start-btn">Start tuner</button>
+
+  <div id="readout">
+    <div id="gauge-wrap">
+      <canvas id="gauge-canvas" width="320" height="170"></canvas>
+    </div>
+
+    <div id="note-display">—</div>
+    <div id="freq-display"></div>
+    <div id="cents-display"></div>
+
+    <div id="details-box">
+      <div>Concert pitch: <span id="d-concert">—</span></div>
+      <div>Written note:  <span id="d-written">—</span></div>
+      <div>Frequency:     <span id="d-freq">—</span></div>
+      <div>Deviation:     <span id="d-cents">—</span></div>
+      <div>Closest ref:   <span id="d-ref">—</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ── Constants ──────────────────────────────────────────────────────────────
+  const NOTE_NAMES   = ['C','C♯/D♭','D','D♯/E♭','E','F','F♯/G♭','G','G♯/A♭','A','A♯/B♭','B'];
+  const NOTE_SIMPLE  = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const A4_FREQ      = 440;
+  const A4_MIDI      = 69;
+  const SILENCE_RMS  = 0.012;
+  const GOOD_CENTS   = 8;    // within ±8¢ → green
+  const BUFFER_SIZE  = 4096;
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let running       = false;
+  let audioCtx      = null;
+  let analyser      = null;
+  let sourceNode    = null;
+  let animFrame     = null;
+  let transposeUp   = 7;    // semitones to add (concert → written) — French Horn default
+  let lastCents     = null;
+
+  // ── Pitch detection (autocorrelation) ─────────────────────────────────────
+  function detectPitch(buf, sampleRate) {
+    const SIZE = buf.length;
+    const HALF = Math.floor(SIZE / 2);
+
+    // RMS silence gate
+    let rms = 0;
+    for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+    rms = Math.sqrt(rms / SIZE);
+    if (rms < SILENCE_RMS) return -1;
+
+    // Autocorrelation
+    let best_offset = -1;
+    let best_corr   = 0;
+    let lastCorr    = 1;
+    let foundGood   = false;
+    const corrs     = new Float32Array(HALF);
+
+    for (let o = 0; o < HALF; o++) {
+      let c = 0;
+      for (let i = 0; i < HALF; i++) c += buf[i] * buf[i + o];
+      // Normalise
+      let n0 = 0, no = 0;
+      for (let i = 0; i < HALF; i++) { n0 += buf[i]*buf[i]; no += buf[i+o]*buf[i+o]; }
+      const denom = Math.sqrt(n0 * no);
+      corrs[o] = denom > 0 ? c / denom : 0;
+
+      if (o > 0 && corrs[o] > 0.9 && corrs[o] > lastCorr) {
+        foundGood = true;
+        if (corrs[o] > best_corr) { best_corr = corrs[o]; best_offset = o; }
+      } else if (foundGood) {
+        // Parabolic interpolation for sub-sample accuracy
+        if (best_offset > 0 && best_offset < HALF - 1) {
+          const a = corrs[best_offset - 1];
+          const b = corrs[best_offset];
+          const c2 = corrs[best_offset + 1];
+          const shift = (c2 - a) / (2 * (2 * b - a - c2));
+          return sampleRate / (best_offset + shift);
+        }
+        return sampleRate / best_offset;
+      }
+      lastCorr = corrs[o];
+    }
+
+    if (best_corr > 0.01 && best_offset > 0) return sampleRate / best_offset;
+    return -1;
+  }
+
+  // ── Frequency → MIDI note number (float) ──────────────────────────────────
+  function freqToMidi(freq) {
+    return A4_MIDI + 12 * Math.log2(freq / A4_FREQ);
+  }
+
+  // ── MIDI → note info ───────────────────────────────────────────────────────
+  function midiToNote(midi) {
+    const rounded = Math.round(midi);
+    const cents   = Math.round((midi - rounded) * 100);
+    const noteIdx = ((rounded % 12) + 12) % 12;
+    const octave  = Math.floor(rounded / 12) - 1;
+    return { name: NOTE_NAMES[noteIdx], simple: NOTE_SIMPLE[noteIdx], octave, cents };
+  }
+
+  // ── Transpose concert midi → written midi ──────────────────────────────────
+  function concertToWritten(concertMidi) {
+    return concertMidi + transposeUp;
+  }
+
+  // ── Reference frequency for a rounded MIDI note ───────────────────────────
+  function midiToFreq(midi) {
+    return A4_FREQ * Math.pow(2, (midi - A4_MIDI) / 12);
+  }
+
+  // ── Draw gauge ─────────────────────────────────────────────────────────────
+  const canvas  = document.getElementById('gauge-canvas');
+  const ctx2d   = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const CX = W / 2, CY = H - 20;
+  const R_OUTER = 130, R_INNER = 88, R_NEEDLE = 118, R_TICK_IN = 100;
+
+  function drawGauge(cents) {
+    ctx2d.clearRect(0, 0, W, H);
+
+    // Arc background
+    const startAngle = Math.PI * 1.1;
+    const endAngle   = Math.PI * 1.9;
+
+    // Gradient background arc
+    ctx2d.beginPath();
+    ctx2d.arc(CX, CY, R_OUTER, startAngle, endAngle);
+    ctx2d.arc(CX, CY, R_INNER, endAngle, startAngle, true);
+    ctx2d.closePath();
+    const grad = ctx2d.createLinearGradient(CX - R_OUTER, CY, CX + R_OUTER, CY);
+    grad.addColorStop(0,    '#2980b9');
+    grad.addColorStop(0.35, '#2980b9');
+    grad.addColorStop(0.45, '#27ae60');
+    grad.addColorStop(0.55, '#27ae60');
+    grad.addColorStop(0.65, '#e74c3c');
+    grad.addColorStop(1,    '#e74c3c');
+    ctx2d.fillStyle = grad;
+    ctx2d.fill();
+
+    // Tick marks
+    for (let c = -50; c <= 50; c += 10) {
+      const frac    = (c + 50) / 100;
+      const angle   = startAngle + frac * (endAngle - startAngle);
+      const major   = c % 50 === 0 || c === 0;
+      const rIn     = major ? R_TICK_IN - 6 : R_TICK_IN;
+      ctx2d.beginPath();
+      ctx2d.moveTo(CX + rIn * Math.cos(angle), CY + rIn * Math.sin(angle));
+      ctx2d.lineTo(CX + R_OUTER * Math.cos(angle), CY + R_OUTER * Math.sin(angle));
+      ctx2d.strokeStyle = 'rgba(255,255,255,0.7)';
+      ctx2d.lineWidth   = major ? 2.5 : 1;
+      ctx2d.stroke();
+    }
+
+    // Labels
+    ctx2d.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx2d.font      = '11px sans-serif';
+    ctx2d.textAlign = 'center';
+    ctx2d.textBaseline = 'middle';
+    for (const [c, label] of [[-50,'♭50'],[-25,'25'],[0,'0'],[25,'25'],[50,'♯50']]) {
+      const frac  = (c + 50) / 100;
+      const angle = startAngle + frac * (endAngle - startAngle);
+      const r     = R_TICK_IN - 14;
+      ctx2d.fillText(label, CX + r * Math.cos(angle), CY + r * Math.sin(angle));
+    }
+
+    // Needle
+    const clampedCents = cents === null ? 0 : Math.max(-50, Math.min(50, cents));
+    const frac         = (clampedCents + 50) / 100;
+    const needleAngle  = startAngle + frac * (endAngle - startAngle);
+    const nx = CX + R_NEEDLE * Math.cos(needleAngle);
+    const ny = CY + R_NEEDLE * Math.sin(needleAngle);
+
+    ctx2d.beginPath();
+    ctx2d.moveTo(CX, CY);
+    ctx2d.lineTo(nx, ny);
+    ctx2d.strokeStyle = cents === null ? '#aaa' : '#fff';
+    ctx2d.lineWidth   = 3;
+    ctx2d.lineCap     = 'round';
+    ctx2d.stroke();
+
+    // Hub
+    ctx2d.beginPath();
+    ctx2d.arc(CX, CY, 7, 0, 2 * Math.PI);
+    ctx2d.fillStyle = '#fff';
+    ctx2d.fill();
+
+    // Cents label at needle tip
+    if (cents !== null) {
+      ctx2d.font      = 'bold 13px sans-serif';
+      ctx2d.fillStyle = '#fff';
+      ctx2d.textAlign = 'center';
+      const labelR = R_NEEDLE + 14;
+      ctx2d.fillText(
+        (cents >= 0 ? '+' : '') + cents + '¢',
+        CX + labelR * Math.cos(needleAngle),
+        CY + labelR * Math.sin(needleAngle)
+      );
+    }
+  }
+
+  // ── Update UI ──────────────────────────────────────────────────────────────
+  function updateUI(freq) {
+    const noteEl    = document.getElementById('note-display');
+    const freqEl    = document.getElementById('freq-display');
+    const centsEl   = document.getElementById('cents-display');
+    const dConcert  = document.getElementById('d-concert');
+    const dWritten  = document.getElementById('d-written');
+    const dFreq     = document.getElementById('d-freq');
+    const dCentsEl  = document.getElementById('d-cents');
+    const dRef      = document.getElementById('d-ref');
+
+    if (freq === -1) {
+      drawGauge(null);
+      noteEl.innerHTML = '—';
+      freqEl.textContent = '';
+      centsEl.textContent = '';
+      centsEl.className = '';
+      dConcert.textContent = '—';
+      dWritten.textContent = '—';
+      dFreq.textContent = '—';
+      dCentsEl.textContent = '—';
+      dRef.textContent = '—';
+      lastCents = null;
+      return;
+    }
+
+    const concertMidi   = freqToMidi(freq);
+    const concertNote   = midiToNote(concertMidi);
+    const writtenMidi   = concertToWritten(concertMidi);
+    const writtenNote   = midiToNote(writtenMidi);
+    const roundedWritten = Math.round(writtenMidi);
+    const cents         = Math.round((writtenMidi - roundedWritten) * 100);
+    const refFreq       = transposeUp === 0
+      ? midiToFreq(Math.round(concertMidi))
+      : midiToFreq(roundedWritten - transposeUp);
+
+    // Smooth needle a little
+    const smoothCents = lastCents === null ? cents : Math.round(lastCents * 0.35 + cents * 0.65);
+    lastCents = smoothCents;
+
+    drawGauge(smoothCents);
+
+    // Main note (written)
+    noteEl.innerHTML = writtenNote.name + '<span id="octave-display">' + writtenNote.octave + '</span>';
+    freqEl.textContent = freq.toFixed(1) + ' Hz';
+
+    if (Math.abs(smoothCents) <= GOOD_CENTS) {
+      centsEl.textContent = 'In tune ✓';
+      centsEl.className   = 'in-tune';
+    } else if (smoothCents > 0) {
+      centsEl.textContent = '+' + smoothCents + '¢ sharp';
+      centsEl.className   = 'sharp';
+    } else {
+      centsEl.textContent = smoothCents + '¢ flat';
+      centsEl.className   = 'flat';
+    }
+
+    // Details
+    dConcert.textContent = concertNote.name + concertNote.octave;
+    dWritten.textContent = writtenNote.name + writtenNote.octave;
+    dFreq.textContent    = freq.toFixed(2) + ' Hz';
+    dCentsEl.textContent = (cents >= 0 ? '+' : '') + cents + '¢';
+    dRef.textContent     = refFreq.toFixed(2) + ' Hz';
+  }
+
+  // ── Analysis loop ──────────────────────────────────────────────────────────
+  function loop() {
+    if (!running) return;
+    animFrame = requestAnimationFrame(loop);
+
+    const buf = new Float32Array(BUFFER_SIZE);
+    analyser.getFloatTimeDomainData(buf);
+    const freq = detectPitch(buf, audioCtx.sampleRate);
+    updateUI(freq);
+  }
+
+  // ── Start / stop ───────────────────────────────────────────────────────────
+  async function start() {
+    const errEl = document.getElementById('error-msg');
+    errEl.textContent = '';
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = BUFFER_SIZE * 2;
+      sourceNode = audioCtx.createMediaStreamSource(stream);
+      sourceNode.connect(analyser);
+      running = true;
+      document.getElementById('readout').style.display = 'flex';
+      const btn = document.getElementById('start-btn');
+      btn.textContent = 'Stop tuner';
+      btn.classList.add('running');
+      loop();
+    } catch (e) {
+      errEl.textContent = 'Microphone access denied or unavailable.';
+    }
+  }
+
+  function stop() {
+    running = false;
+    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+    if (sourceNode) { sourceNode.disconnect(); sourceNode = null; }
+    if (audioCtx)   { audioCtx.close(); audioCtx = null; }
+    analyser = null;
+    document.getElementById('readout').style.display = 'none';
+    const btn = document.getElementById('start-btn');
+    btn.textContent = 'Start tuner';
+    btn.classList.remove('running');
+  }
+
+  // ── Wire up ────────────────────────────────────────────────────────────────
+  document.getElementById('start-btn').addEventListener('click', () => {
+    if (running) stop(); else start();
+  });
+
+  document.getElementById('instrument-select').addEventListener('change', e => {
+    transposeUp = parseInt(e.target.value, 10);
+    lastCents   = null;
+  });
+})();
+</script>
