@@ -1,0 +1,435 @@
+---
+emoji: 🥁
+layout: post
+title: Metronome
+category: Music
+description: A metronome with time signature support and distinct downbeat sound.
+---
+<style>
+  main { text-align: center; }
+
+  #bpm-display {
+    font-size: 72px;
+    font-weight: bold;
+    line-height: 1;
+    margin: 0;
+    cursor: text;
+    border-radius: 6px;
+    padding: 4px 12px;
+    display: inline-block;
+    min-width: 3ch;
+    transition: background 0.15s;
+    color: var(--text);
+  }
+
+  #bpm-display:hover { background: var(--accent-bg); }
+  #bpm-display[contenteditable="true"] { background: var(--accent-bg); outline: 2px solid #e74c3c; }
+
+  #bpm-label {
+    font-size: 14px;
+    color: var(--text-light);
+    margin: 4px 0 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  #beat-dots {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px auto;
+    min-height: 32px;
+  }
+
+  .dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--border);
+    opacity: 0.4;
+    transition: background 0.05s, opacity 0.05s;
+    flex-shrink: 0;
+  }
+
+  .dot.accent {
+    opacity: 0.7;
+    outline: 2px solid var(--border);
+  }
+
+  .dot.active {
+    background: #e74c3c !important;
+    opacity: 1 !important;
+    outline: none;
+  }
+
+  .dot.active.beat-one {
+    background: #c0392b !important;
+    box-shadow: 0 0 12px rgba(231,76,60,0.6);
+  }
+
+  #controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+
+  .bpm-btn {
+    font-size: 15px;
+    height: 36px;
+    min-width: 36px;
+    width: auto;
+    padding: 0 10px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: var(--accent-bg);
+    color: var(--text);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .bpm-btn:hover { filter: brightness(0.92) !important; }
+  .bpm-btn:active { filter: brightness(0.84) !important; }
+
+  #bpm-slider {
+    -webkit-appearance: none;
+    width: 160px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    flex-shrink: 0;
+    margin-bottom: 0;
+  }
+
+  #bpm-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e74c3c;
+    cursor: pointer;
+  }
+
+  #bpm-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e74c3c;
+    cursor: pointer;
+    border: none;
+  }
+
+  #start-btn {
+    font-size: 20px;
+    padding: 12px 40px;
+    border-radius: 8px;
+    border: none;
+    background: #e74c3c;
+    color: #fff;
+    cursor: pointer;
+    margin: 12px 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #start-btn:hover { background: #c0392b !important; color: #fff !important; }
+  #start-btn:active { background: #a93226 !important; }
+  #start-btn.running { background: var(--text-light) !important; color: var(--bg) !important; }
+  #start-btn.running:hover { filter: brightness(0.85) !important; }
+
+  #sig-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  #sig-row label {
+    font-size: 14px;
+    color: var(--text-light);
+  }
+
+  #tap-btn {
+    font-size: 16px;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--accent-bg);
+    color: var(--text);
+    cursor: pointer;
+    margin: 8px 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #tap-btn:hover { filter: brightness(0.92) !important; color: var(--text) !important; }
+  #tap-btn:active { filter: brightness(0.84) !important; }
+</style>
+
+<p id="bpm-display" title="Click to edit" contenteditable="false">120</p>
+<p id="bpm-label">BPM</p>
+
+<div id="beat-dots"></div>
+
+<div id="controls">
+  <button class="bpm-btn" id="btn-minus10">−10</button>
+  <button class="bpm-btn" id="btn-minus">−</button>
+  <input type="range" id="bpm-slider" min="20" max="300" value="120">
+  <button class="bpm-btn" id="btn-plus">+</button>
+  <button class="bpm-btn" id="btn-plus10">+10</button>
+</div>
+
+<div id="sig-row">
+  <label for="beats-select">Beats per bar:</label>
+  <select id="beats-select">
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4" selected>4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+  </select>
+</div>
+
+<br>
+<button id="start-btn">Start</button>
+<br>
+<button id="tap-btn">Tap Tempo</button>
+
+<script>
+(function () {
+  // ── State ────────────────────────────────────────────────────────────────
+  let bpm = 120;
+  let beatsPerBar = 4;
+  let running = false;
+  let currentBeat = 0;          // 0-indexed
+  let schedulerTimer = null;
+  let nextBeatTime = 0;
+  let audioCtx = null;
+
+  // Tap tempo
+  let tapTimes = [];
+
+  // ── Audio context (lazy) ─────────────────────────────────────────────────
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  // ── Click synthesis ──────────────────────────────────────────────────────
+  function playClick(time, isDownbeat) {
+    const ctx = getAudioCtx();
+
+    // Oscillator burst
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.frequency.value = isDownbeat ? 1800 : 1000;
+    gain.gain.setValueAtTime(isDownbeat ? 1.0 : 0.6, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+
+    osc.start(time);
+    osc.stop(time + 0.05);
+
+    // Short noise burst for click texture
+    const bufSize = ctx.sampleRate * 0.025;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+
+    const noise = ctx.createBufferSource();
+    const noiseGain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = isDownbeat ? 2000 : 1200;
+    filter.Q.value = 0.5;
+    noise.buffer = buf;
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    noiseGain.gain.setValueAtTime(isDownbeat ? 0.4 : 0.2, time);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.025);
+    noise.start(time);
+    noise.stop(time + 0.03);
+  }
+
+  // ── Scheduler ────────────────────────────────────────────────────────────
+  const SCHEDULE_AHEAD = 0.1;   // seconds to look ahead
+  const INTERVAL_MS    = 25;    // scheduler tick interval
+
+  function scheduleBeats() {
+    const ctx = getAudioCtx();
+    while (nextBeatTime < ctx.currentTime + SCHEDULE_AHEAD) {
+      const isDownbeat = currentBeat === 0;
+      playClick(nextBeatTime, isDownbeat);
+      scheduleVisual(nextBeatTime, currentBeat);
+      currentBeat = (currentBeat + 1) % beatsPerBar;
+      nextBeatTime += 60 / bpm;
+    }
+  }
+
+  // ── Visual feedback ──────────────────────────────────────────────────────
+  function scheduleVisual(time, beat) {
+    const ctx = getAudioCtx();
+    const delay = (time - ctx.currentTime) * 1000;
+    setTimeout(() => highlightDot(beat), Math.max(0, delay));
+  }
+
+  let activeDot = -1;
+  function highlightDot(beat) {
+    const dots = document.querySelectorAll('.dot');
+    if (activeDot >= 0 && dots[activeDot]) {
+      dots[activeDot].classList.remove('active', 'beat-one');
+    }
+    if (dots[beat]) {
+      dots[beat].classList.add('active');
+      if (beat === 0) dots[beat].classList.add('beat-one');
+    }
+    activeDot = beat;
+  }
+
+  function clearDots() {
+    document.querySelectorAll('.dot').forEach(d => d.classList.remove('active', 'beat-one'));
+    activeDot = -1;
+  }
+
+  // ── Build dot row ────────────────────────────────────────────────────────
+  function buildDots() {
+    const container = document.getElementById('beat-dots');
+    container.innerHTML = '';
+    for (let i = 0; i < beatsPerBar; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === 0 ? ' accent' : '');
+      container.appendChild(d);
+    }
+  }
+
+  // ── Start / stop ─────────────────────────────────────────────────────────
+  function start() {
+    const ctx = getAudioCtx();
+    currentBeat = 0;
+    nextBeatTime = ctx.currentTime + 0.05;
+    schedulerTimer = setInterval(scheduleBeats, INTERVAL_MS);
+    running = true;
+    document.getElementById('start-btn').textContent = 'Stop';
+    document.getElementById('start-btn').classList.add('running');
+  }
+
+  function stop() {
+    clearInterval(schedulerTimer);
+    schedulerTimer = null;
+    running = false;
+    clearDots();
+    document.getElementById('start-btn').textContent = 'Start';
+    document.getElementById('start-btn').classList.remove('running');
+  }
+
+  // ── BPM helpers ───────────────────────────────────────────────────────────
+  function setBpm(val) {
+    bpm = Math.min(300, Math.max(20, Math.round(val)));
+    document.getElementById('bpm-display').textContent = bpm;
+    document.getElementById('bpm-slider').value = bpm;
+    syncUrl();
+  }
+
+  // ── URL sync ──────────────────────────────────────────────────────────────
+  function syncUrl() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('bpm', bpm);
+    params.set('beats', beatsPerBar);
+    const newUrl = window.location.pathname + '?' + params.toString();
+    history.replaceState(null, '', newUrl);
+  }
+
+  function loadFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('bpm')) setBpm(+params.get('bpm'));
+    if (params.has('beats')) {
+      const b = +params.get('beats');
+      if (b >= 2 && b <= 8) {
+        beatsPerBar = b;
+        document.getElementById('beats-select').value = b;
+        buildDots();
+      }
+    }
+  }
+
+  // ── Tap tempo ─────────────────────────────────────────────────────────────
+  function tap() {
+    const now = performance.now();
+    tapTimes = tapTimes.filter(t => now - t < 3000);
+    tapTimes.push(now);
+    if (tapTimes.length >= 2) {
+      const intervals = [];
+      for (let i = 1; i < tapTimes.length; i++) intervals.push(tapTimes[i] - tapTimes[i-1]);
+      const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+      setBpm(60000 / avg);
+    }
+  }
+
+  // ── Wire up UI ────────────────────────────────────────────────────────────
+  document.getElementById('start-btn').addEventListener('click', () => {
+    if (running) stop(); else start();
+  });
+
+  document.getElementById('bpm-slider').addEventListener('input', e => setBpm(+e.target.value));
+  document.getElementById('btn-minus').addEventListener('click', () => setBpm(bpm - 1));
+  document.getElementById('btn-plus').addEventListener('click',  () => setBpm(bpm + 1));
+  document.getElementById('btn-minus10').addEventListener('click', () => setBpm(bpm - 10));
+  document.getElementById('btn-plus10').addEventListener('click',  () => setBpm(bpm + 10));
+
+  document.getElementById('beats-select').addEventListener('change', e => {
+    beatsPerBar = +e.target.value;
+    buildDots();
+    syncUrl();
+    if (running) currentBeat = 0;
+  });
+
+  document.getElementById('tap-btn').addEventListener('click', tap);
+
+  // ── Inline BPM edit ───────────────────────────────────────────────────────
+  const bpmDisplay = document.getElementById('bpm-display');
+
+  bpmDisplay.addEventListener('click', () => {
+    bpmDisplay.contentEditable = 'true';
+    bpmDisplay.focus();
+    // select all text
+    const range = document.createRange();
+    range.selectNodeContents(bpmDisplay);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  });
+
+  bpmDisplay.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); bpmDisplay.blur(); }
+    if (e.key === 'Escape') { bpmDisplay.textContent = bpm; bpmDisplay.blur(); }
+    // allow only digits and control keys
+    if (!/^\d$/.test(e.key) && !['Backspace','Delete','ArrowLeft','ArrowRight','Tab','Enter','Escape'].includes(e.key)) {
+      e.preventDefault();
+    }
+  });
+
+  bpmDisplay.addEventListener('blur', () => {
+    bpmDisplay.contentEditable = 'false';
+    const val = parseInt(bpmDisplay.textContent, 10);
+    if (!isNaN(val)) setBpm(val);
+    else bpmDisplay.textContent = bpm;
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  buildDots();
+  loadFromUrl();
+})();
+</script>
