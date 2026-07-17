@@ -1,0 +1,444 @@
+/* Hyrox Builder styles — scoped under #hyrox-app so they never leak into
+ * the rest of the blog. Reuses the site's theme variables (with fallbacks)
+ * so light/dark mode just works. */
+
+#hyrox-app {
+  --hx-radius: 12px;
+  --hx-gap: 0.85rem;
+  --hx-bg: var(--bg, #fff);
+  --hx-card: var(--accent-bg, #f5f7ff);
+  --hx-text: var(--text, #212121);
+  --hx-muted: var(--text-light, #585858);
+  --hx-border: var(--border, #898ea4);
+  --hx-accent: var(--accent, #0d47a1);
+  --hx-accent-hover: var(--accent-hover, #1266e2);
+  --hx-accent-text: var(--accent-text, #fff);
+  --hx-danger: #d64550;
+
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--hx-text);
+  margin: 1.5rem 0;
+}
+
+#hyrox-app * { box-sizing: border-box; }
+
+/* The site stylesheet gives every <button> a bottom margin; reset it so
+   flex layouts (segmented control, chips) fill their containers. */
+#hyrox-app button { margin: 0; }
+
+/* ------------------------------- Buttons ------------------------------- */
+#hyrox-app .hx-btn {
+  font: inherit;
+  font-weight: 600;
+  border: 1px solid var(--hx-accent);
+  background: var(--hx-accent);
+  color: var(--hx-accent-text);
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--hx-radius);
+  cursor: pointer;
+  line-height: 1.2;
+  transition: background 0.15s, border-color 0.15s, transform 0.05s;
+}
+#hyrox-app .hx-btn:hover:enabled { background: var(--hx-accent-hover); border-color: var(--hx-accent-hover); }
+#hyrox-app .hx-btn:active:enabled { transform: translateY(1px); }
+#hyrox-app .hx-btn.secondary {
+  background: transparent;
+  color: var(--hx-accent);
+}
+#hyrox-app .hx-btn.secondary:hover:enabled { background: color-mix(in srgb, var(--hx-accent) 12%, transparent); }
+#hyrox-app .hx-btn.ghost {
+  background: transparent;
+  color: var(--hx-text);
+  border-color: var(--hx-border);
+}
+#hyrox-app .hx-btn.ghost:hover:enabled { border-color: var(--hx-accent); color: var(--hx-accent); }
+#hyrox-app .hx-btn.danger { background: transparent; color: var(--hx-danger); border-color: var(--hx-danger); }
+#hyrox-app .hx-btn.danger:hover:enabled { background: var(--hx-danger); color: #fff; }
+#hyrox-app .hx-btn.small { padding: 0.3rem 0.6rem; font-size: 0.85rem; }
+#hyrox-app .hx-btn.big { font-size: 1.4rem; padding: 1rem 1.4rem; width: 100%; margin-top: 0.75rem; }
+#hyrox-app .hx-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+#hyrox-app .hx-icon-btn {
+  font: inherit;
+  border: 1px solid var(--hx-border);
+  background: var(--hx-bg);
+  color: var(--hx-text);
+  width: 2rem;
+  height: 2rem;
+  line-height: 1;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#hyrox-app .hx-icon-btn:hover:enabled { border-color: var(--hx-accent); color: var(--hx-accent); }
+#hyrox-app .hx-icon-btn.danger:hover:enabled { border-color: var(--hx-danger); color: var(--hx-danger); }
+#hyrox-app .hx-icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ------------------------------- Layout ------------------------------- */
+#hyrox-app .hx-wrap { display: flex; flex-direction: column; gap: 1.25rem; }
+
+#hyrox-app .hx-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+#hyrox-app .hx-toolbar.center { justify-content: center; }
+#hyrox-app .hx-toolbar-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+#hyrox-app .hx-toolbar-title { font-size: 1.3rem; font-weight: 700; }
+
+#hyrox-app .hx-card {
+  background: var(--hx-card);
+  border: 1px solid var(--hx-border);
+  border-radius: var(--hx-radius);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+#hyrox-app .hx-card-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
+#hyrox-app .hx-h3 { margin: 0; font-size: 1.15rem; }
+#hyrox-app .hx-label { font-weight: 600; font-size: 0.9rem; color: var(--hx-muted); }
+#hyrox-app .hx-hint { margin: 0; font-size: 0.85rem; color: var(--hx-muted); }
+
+#hyrox-app input, #hyrox-app select {
+  font: inherit;
+  color: var(--hx-text);
+  background: var(--hx-bg);
+  border: 1px solid var(--hx-border);
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+}
+#hyrox-app input:focus, #hyrox-app select:focus { outline: 2px solid var(--hx-accent); outline-offset: 1px; }
+#hyrox-app .hx-name-input { font-size: 1.2rem; font-weight: 600; width: 100%; }
+#hyrox-app .hx-select { cursor: pointer; }
+
+/* ---------------------------- Program list ---------------------------- */
+#hyrox-app .hx-prog-list { display: flex; flex-direction: column; gap: 0.75rem; }
+#hyrox-app .hx-prog-card {
+  background: var(--hx-card);
+  border: 1px solid var(--hx-border);
+  border-radius: var(--hx-radius);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+#hyrox-app .hx-prog-name { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.35rem; }
+#hyrox-app .hx-prog-meta { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+#hyrox-app .hx-badge {
+  font-size: 0.8rem;
+  background: var(--hx-bg);
+  border: 1px solid var(--hx-border);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  color: var(--hx-muted);
+}
+#hyrox-app .hx-prog-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+#hyrox-app .hx-empty { text-align: center; color: var(--hx-muted); padding: 2.5rem 1rem; }
+#hyrox-app .hx-empty-emoji { font-size: 3rem; margin-bottom: 0.5rem; }
+
+/* ---------------------------- Participants ---------------------------- */
+#hyrox-app .hx-participants { display: flex; flex-direction: column; gap: 0.5rem; }
+#hyrox-app .hx-participant { display: flex; gap: 0.5rem; align-items: center; }
+#hyrox-app .hx-participant-input { flex: 1; }
+
+/* ------------------------------ Palette ------------------------------ */
+#hyrox-app .hx-palette {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+#hyrox-app .hx-palette-item {
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--hx-bg);
+  border: 1px dashed var(--hx-border);
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  cursor: grab;
+  color: var(--hx-text);
+  font-size: 0.9rem;
+}
+#hyrox-app .hx-palette-item:hover { border-color: var(--hx-accent); color: var(--hx-accent); border-style: solid; }
+#hyrox-app .hx-palette-item:active { cursor: grabbing; }
+#hyrox-app .hx-pi-icon { font-size: 1.1rem; }
+
+/* ------------------------------- Steps ------------------------------- */
+#hyrox-app .hx-steps { display: flex; flex-direction: column; gap: 0.6rem; min-height: 3rem; }
+#hyrox-app .hx-steps-empty {
+  border: 2px dashed var(--hx-border);
+  border-radius: var(--hx-radius);
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--hx-muted);
+}
+#hyrox-app .hx-step {
+  background: var(--hx-bg);
+  border: 1px solid var(--hx-border);
+  border-radius: var(--hx-radius);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+#hyrox-app .hx-step.dragging { opacity: 0.4; }
+#hyrox-app .hx-step-head { display: flex; align-items: center; gap: 0.5rem; }
+#hyrox-app .hx-drag { cursor: grab; color: var(--hx-muted); font-size: 1.2rem; user-select: none; padding: 0 0.2rem; }
+#hyrox-app .hx-drag:active { cursor: grabbing; }
+#hyrox-app .hx-step-num {
+  background: var(--hx-accent);
+  color: var(--hx-accent-text);
+  border-radius: 999px;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0 0.3rem;
+}
+#hyrox-app .hx-step-icon { font-size: 1.25rem; }
+#hyrox-app .hx-step-name { font-weight: 700; flex: 1; }
+#hyrox-app .hx-step-tools { display: flex; gap: 0.25rem; }
+
+#hyrox-app .hx-params { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+#hyrox-app .hx-param { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.8rem; color: var(--hx-muted); }
+#hyrox-app .hx-param-input { width: 6.5rem; }
+
+#hyrox-app .hx-assign, #hyrox-app .hx-mode { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+#hyrox-app .hx-assign-label { font-size: 0.85rem; color: var(--hx-muted); font-weight: 600; }
+#hyrox-app .hx-assign-chip {
+  font: inherit;
+  font-size: 0.85rem;
+  border: 1px solid var(--hx-border);
+  background: var(--hx-bg);
+  color: var(--hx-muted);
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
+}
+#hyrox-app .hx-assign-chip.active {
+  background: var(--hx-accent);
+  border-color: var(--hx-accent);
+  color: var(--hx-accent-text);
+}
+
+/* Segmented control */
+#hyrox-app .hx-seg { display: inline-flex; border: 1px solid var(--hx-border); border-radius: 999px; overflow: hidden; }
+#hyrox-app .hx-seg-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  border: none;
+  background: var(--hx-bg);
+  color: var(--hx-muted);
+  padding: 0.3rem 0.85rem;
+  cursor: pointer;
+}
+#hyrox-app .hx-seg-btn.active { background: var(--hx-accent); color: var(--hx-accent-text); }
+
+#hyrox-app .hx-standard { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+#hyrox-app .hx-chip {
+  font-size: 0.85rem;
+  background: var(--hx-card);
+  border: 1px solid var(--hx-border);
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+}
+
+/* -------------------------------- Run -------------------------------- */
+#hyrox-app .hx-run { display: flex; flex-direction: column; gap: 1rem; }
+#hyrox-app .hx-run-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+#hyrox-app .hx-run-title { font-weight: 700; font-size: 1.1rem; text-align: center; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+#hyrox-app .hx-total-wrap { text-align: center; }
+#hyrox-app .hx-total-label { font-size: 0.85rem; color: var(--hx-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+#hyrox-app .hx-timer-total {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  font-family: var(--mono-font, monospace);
+  font-size: clamp(2.5rem, 12vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+}
+#hyrox-app .hx-timer-total.big { font-size: clamp(3rem, 14vw, 5.5rem); }
+
+#hyrox-app .hx-current {
+  background: var(--hx-card);
+  border: 1px solid var(--hx-border);
+  border-radius: var(--hx-radius);
+  padding: 1.25rem;
+  text-align: center;
+}
+#hyrox-app .hx-current-top { display: flex; justify-content: space-between; color: var(--hx-muted); font-size: 0.85rem; font-weight: 600; }
+#hyrox-app .hx-current-name { font-size: 1.8rem; font-weight: 800; margin: 0.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+#hyrox-app .hx-current-icon { font-size: 2rem; }
+#hyrox-app .hx-current-params { color: var(--hx-muted); font-size: 1rem; }
+#hyrox-app .hx-timer-step {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  font-family: var(--mono-font, monospace);
+  font-size: clamp(2rem, 9vw, 3.2rem);
+  font-weight: 700;
+  color: var(--hx-accent);
+  margin: 0.5rem 0;
+}
+#hyrox-app .hx-current-athletes { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
+#hyrox-app .hx-next { margin-top: 0.85rem; color: var(--hx-muted); font-size: 0.95rem; font-weight: 600; }
+
+/* Sequence athletes */
+#hyrox-app .hx-seq-box { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.75rem; text-align: left; }
+#hyrox-app .hx-seq-athlete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--hx-border);
+  border-radius: 8px;
+  background: var(--hx-bg);
+}
+#hyrox-app .hx-seq-athlete.active { border-color: var(--hx-accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--hx-accent) 30%, transparent); }
+#hyrox-app .hx-seq-athlete.done { opacity: 0.6; }
+#hyrox-app .hx-seq-time { font-family: var(--mono-font, monospace); font-variant-numeric: tabular-nums; }
+#hyrox-app .hx-seq-time.live { color: var(--hx-accent); font-weight: 700; }
+
+#hyrox-app .hx-run-controls { display: flex; justify-content: center; }
+
+/* Steps rail */
+#hyrox-app .hx-rail-wrap { display: flex; flex-direction: column; gap: 0.4rem; }
+#hyrox-app .hx-rail-title { font-size: 0.85rem; color: var(--hx-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+#hyrox-app .hx-rail { display: flex; flex-direction: column; gap: 0.25rem; }
+#hyrox-app .hx-rail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+}
+#hyrox-app .hx-rail-item.done { color: var(--hx-muted); }
+#hyrox-app .hx-rail-item.active {
+  background: color-mix(in srgb, var(--hx-accent) 14%, transparent);
+  border-color: var(--hx-accent);
+  font-weight: 700;
+}
+#hyrox-app .hx-rail-time { font-family: var(--mono-font, monospace); font-variant-numeric: tabular-nums; color: var(--hx-muted); }
+
+/* ------------------------------ Summary ------------------------------ */
+#hyrox-app .hx-summary-hero { text-align: center; padding: 1rem 0 0.5rem; }
+#hyrox-app .hx-summary-emoji { font-size: 3rem; }
+#hyrox-app .hx-summary-title { font-size: 1.5rem; font-weight: 800; margin: 0.25rem 0 0.5rem; }
+
+#hyrox-app .hx-breakdown {
+  background: var(--hx-card);
+  border: 1px solid var(--hx-border);
+  border-radius: var(--hx-radius);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+#hyrox-app .hx-bd-row { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid color-mix(in srgb, var(--hx-border) 40%, transparent); }
+#hyrox-app .hx-bd-row:last-child { border-bottom: none; }
+#hyrox-app .hx-bd-name { font-weight: 600; }
+#hyrox-app .hx-bd-time { font-family: var(--mono-font, monospace); font-variant-numeric: tabular-nums; }
+#hyrox-app .hx-bd-splits { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0 0 0.5rem 1rem; }
+#hyrox-app .hx-bd-split { font-size: 0.8rem; color: var(--hx-muted); background: var(--hx-bg); border: 1px solid var(--hx-border); border-radius: 999px; padding: 0.1rem 0.55rem; }
+
+/* ------------------------------ History ------------------------------ */
+#hyrox-app .hx-runs { display: flex; flex-direction: column; gap: 0.6rem; }
+#hyrox-app .hx-run-item {
+  background: var(--hx-card);
+  border: 1px solid var(--hx-border);
+  border-radius: var(--hx-radius);
+  padding: 0.5rem 0.85rem;
+}
+#hyrox-app .hx-run-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 0.35rem 0;
+}
+#hyrox-app .hx-run-summary::-webkit-details-marker { display: none; }
+#hyrox-app .hx-run-date { flex: 1; font-weight: 600; }
+#hyrox-app .hx-run-total { font-family: var(--mono-font, monospace); font-variant-numeric: tabular-nums; font-weight: 700; }
+#hyrox-app .hx-run-item[open] .hx-breakdown { margin-top: 0.5rem; }
+
+/* ------------------------------- Modal ------------------------------- */
+#hyrox-app .hx-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 9999;
+}
+#hyrox-app .hx-modal {
+  background: var(--hx-bg);
+  border: 1px solid var(--hx-border);
+  border-radius: var(--hx-radius);
+  width: min(520px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+#hyrox-app .hx-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--hx-border);
+}
+#hyrox-app .hx-modal-head .hx-h3 { margin: 0; }
+#hyrox-app .hx-modal-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+#hyrox-app .hx-modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+#hyrox-app .hx-code {
+  width: 100%;
+  font-family: var(--mono-font, monospace);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--hx-text);
+  background: var(--hx-card);
+  border: 1px solid var(--hx-border);
+  border-radius: 8px;
+  padding: 0.6rem;
+  resize: vertical;
+  word-break: break-all;
+}
+#hyrox-app .hx-code:focus { outline: 2px solid var(--hx-accent); outline-offset: 1px; }
+
+/* ----------------------------- Fullscreen ----------------------------- */
+#hyrox-app:fullscreen,
+#hyrox-app:-webkit-full-screen {
+  background: var(--hx-bg);
+  overflow-y: auto;
+  padding: 1.5rem clamp(1rem, 5vw, 4rem);
+  margin: 0;
+  display: block;
+}
+#hyrox-app:fullscreen .hx-run { max-width: 900px; margin: 0 auto; }
+
+/* ----------------------------- Responsive ----------------------------- */
+@media (max-width: 560px) {
+  #hyrox-app .hx-prog-card { flex-direction: column; align-items: stretch; }
+  #hyrox-app .hx-prog-actions { justify-content: flex-start; }
+  #hyrox-app .hx-param-input { width: 5.5rem; }
+}
