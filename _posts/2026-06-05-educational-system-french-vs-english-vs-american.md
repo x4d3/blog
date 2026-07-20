@@ -7,7 +7,7 @@ description: A side-by-side comparison of the French, British, and American scho
 ---
 
 | Age   | French Class         | French School     | English (UK)          | UK School                       | American               | US School   |
-|-------|----------------------|-------------------|-----------------------|---------------------------------|------------------------|-------------|
+| ----- | -------------------- | ----------------- | --------------------- | ------------------------------- | ---------------------- | ----------- |
 | 3–4   | Petite Section (PS)  | École Maternelle  | Nursery               | Foundation Stage (EYFS)         | Pre-K                  | Preschool   |
 | 4–5   | Moyenne Section (MS) | École Maternelle  | Reception (Year R)    | Foundation Stage (EYFS)         | Pre-K / Junior K       | Preschool   |
 | 5–6   | Grande Section (GS)  | École Maternelle  | Year 1                | Primary (KS1)                   | Kindergarten           | Elementary  |
@@ -28,10 +28,10 @@ description: A side-by-side comparison of the French, British, and American scho
 
 ### France
 
-- Pre-school (*maternelle*) is non-compulsory but near-universal from age 3.
+- Pre-school (_maternelle_) is non-compulsory but near-universal from age 3.
 - Secondary splits into two distinct institutions:
-    - **Collège** (4 years, compulsory) — 6ème through 3ème
-    - **Lycée** (3 years) — leads to the *Baccalauréat*
+  - **Collège** (4 years, compulsory) — 6ème through 3ème
+  - **Lycée** (3 years) — leads to the _Baccalauréat_
 - Note: Collège class numbers count **down** (6ème → 3ème).
 
 ### United Kingdom
@@ -44,8 +44,8 @@ description: A side-by-side comparison of the French, British, and American scho
 ### United States
 
 - Structure varies by district:
-    - Elementary: K–5 or K–6
-    - Middle School: 6–8 or 7–8
+  - Elementary: K–5 or K–6
+  - Middle School: 6–8 or 7–8
 - High School runs Grades 9–12 and remains **compulsory** through age 16–18 depending on the state, unlike the UK Sixth
   Form.
 - Grade 9–12 students are informally called **Freshman, Sophomore, Junior, Senior**.

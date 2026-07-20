@@ -70,7 +70,6 @@ bar 14 of (49), the Cornet Solo, [at 7:50](https://youtu.be/U4yH4B9deok?si=BKVdL
 
 </details>
 
-
 ## Jean Sibelius
 
 ### Symphony No.2, 4th movement
