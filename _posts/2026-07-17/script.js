@@ -194,6 +194,12 @@ const getDragAfterElement = (container, y) => {
 const runBreakdown = (run) => {
   const box = el('div', { class: 'hx-breakdown' });
   run.steps.forEach((s, i) => {
+    if (s.transitionMs) {
+      box.appendChild(el('div', { class: 'hx-bd-row hx-bd-trans' },
+        el('span', { class: 'hx-bd-name' }, '⟳ Transition'),
+        el('span', { class: 'hx-bd-time' }, fmt(s.transitionMs))
+      ));
+    }
     box.appendChild(el('div', { class: 'hx-bd-row' },
       el('span', { class: 'hx-bd-name' }, `${i + 1}. ${s.icon || ''} ${s.label}`),
       el('span', { class: 'hx-bd-time' }, fmt(s.ms))
@@ -769,10 +775,13 @@ class App {
     if (!prog.steps.length) return;
     this.runState = {
       program: prog,
+      phase: 'station',      // 'station' | 'transition' (roxzone between stations)
       stepIndex: 0,
       totalMs: 0,
       stepMs: 0,
       splitMs: 0,
+      transitionMs: 0,       // time on the current transition
+      pendingTransitionMs: 0, // transition that preceded the current station
       seqIndex: 0,
       splits: [],       // splits collected for the current step
       records: [],      // completed step records
@@ -792,20 +801,23 @@ class App {
     const now = Date.now();
     const d = now - rs.lastTick;
     rs.lastTick = now;
-    rs.totalMs += d;
-    rs.stepMs += d;
-    rs.splitMs += d;
+    rs.totalMs += d; // the global clock always runs
+    if (rs.phase === 'transition') {
+      rs.transitionMs += d; // roxzone time — counted apart from any station
+    } else {
+      rs.stepMs += d;
+      rs.splitMs += d;
+    }
     this.updateRunTimers();
   }
 
   updateRunTimers() {
     const rs = this.runState;
-    const total = document.getElementById('hx-total');
-    if (total) total.textContent = fmt(rs.totalMs, true);
-    const stepT = document.getElementById('hx-steptime');
-    if (stepT) stepT.textContent = fmt(rs.stepMs, true);
-    const splitT = document.getElementById('hx-splittime');
-    if (splitT) splitT.textContent = fmt(rs.splitMs, true);
+    const set = (id, ms) => { const e = document.getElementById(id); if (e) e.textContent = fmt(ms, true); };
+    set('hx-total', rs.totalMs);
+    set('hx-steptime', rs.stepMs);
+    set('hx-splittime', rs.splitMs);
+    set('hx-transtime', rs.transitionMs);
   }
 
   currentStep() {
@@ -838,15 +850,31 @@ class App {
       mode: step.mode,
       participants: this.stepAthletes(step).map((i) => participantName(rs.program, i)),
       ms: rs.stepMs,
+      transitionMs: rs.pendingTransitionMs, // the roxzone before this station (0 for the first)
       splits: rs.splits.slice(),
     });
+    // Last station finishes the run; otherwise switch to the transition phase.
+    if (rs.stepIndex >= rs.program.steps.length - 1) {
+      this.finishRun();
+      return;
+    }
+    rs.phase = 'transition';
+    rs.transitionMs = 0;
+    this.render();
+  }
+
+  // Leave the transition (roxzone) and begin timing the next station.
+  startNextStation() {
+    const rs = this.runState;
+    rs.pendingTransitionMs = rs.transitionMs;
+    rs.transitionMs = 0;
+    rs.stepIndex++;
     rs.stepMs = 0;
     rs.splitMs = 0;
     rs.seqIndex = 0;
     rs.splits = [];
-    rs.stepIndex++;
-    if (rs.stepIndex >= rs.program.steps.length) this.finishRun();
-    else this.render();
+    rs.phase = 'station';
+    this.render();
   }
 
   finishRun() {
@@ -891,8 +919,6 @@ class App {
   renderRun() {
     const rs = this.runState;
     const prog = rs.program;
-    const step = this.currentStep();
-    const def = activityDef(step.type);
     const wrap = el('div', { class: 'hx-run' });
 
     wrap.appendChild(el('div', { class: 'hx-run-bar' },
@@ -905,6 +931,38 @@ class App {
       el('div', { class: 'hx-total-label' }, 'Total time'),
       el('div', { class: 'hx-timer-total', id: 'hx-total' }, fmt(rs.totalMs, true))
     ));
+
+    wrap.appendChild(rs.phase === 'transition' ? this.renderTransition() : this.renderStation());
+
+    wrap.appendChild(el('div', { class: 'hx-run-controls' },
+      el('button', { class: 'hx-btn secondary', onclick: () => this.pauseResume() }, rs.running ? '⏸ Pause' : '▶ Resume')
+    ));
+
+    // Progress rail. During a transition the just-finished station is done and
+    // the upcoming one is highlighted as next.
+    const doneCount = rs.records.length;
+    const activeIndex = rs.phase === 'transition' ? rs.stepIndex + 1 : rs.stepIndex;
+    const rail = el('div', { class: 'hx-rail' });
+    prog.steps.forEach((s, i) => {
+      const d = activityDef(s.type);
+      let cls = 'hx-rail-item';
+      let right = '';
+      if (i < doneCount) { cls += ' done'; right = fmt(rs.records[i].ms); }
+      else if (i === activeIndex) cls += ' active';
+      rail.appendChild(el('div', { class: cls },
+        el('span', { class: 'hx-rail-name' }, `${i + 1}. ${d.icon} ${d.name}`),
+        el('span', { class: 'hx-rail-time' }, right)));
+    });
+    wrap.appendChild(el('div', { class: 'hx-rail-wrap' }, el('div', { class: 'hx-rail-title' }, 'Program'), rail));
+
+    return wrap;
+  }
+
+  renderStation() {
+    const rs = this.runState;
+    const prog = rs.program;
+    const step = this.currentStep();
+    const def = activityDef(step.type);
 
     const panel = el('div', { class: 'hx-current' });
     panel.appendChild(el('div', { class: 'hx-current-top' },
@@ -945,29 +1003,27 @@ class App {
       panel.appendChild(el('button', { class: 'hx-btn big', onclick: () => this.completeStep() }, '✓ Complete station'));
     }
 
-    const next = prog.steps[rs.stepIndex + 1];
-    panel.appendChild(el('div', { class: 'hx-next' },
-      next ? `Up next: ${activityDef(next.type).icon} ${activityDef(next.type).name}` : '🏁 Final station!'));
-    wrap.appendChild(panel);
+    if (rs.stepIndex === prog.steps.length - 1) {
+      panel.appendChild(el('div', { class: 'hx-next' }, '🏁 Final station!'));
+    }
+    return panel;
+  }
 
-    wrap.appendChild(el('div', { class: 'hx-run-controls' },
-      el('button', { class: 'hx-btn secondary', onclick: () => this.pauseResume() }, rs.running ? '⏸ Pause' : '▶ Resume')
+  renderTransition() {
+    const rs = this.runState;
+    const nextStep = rs.program.steps[rs.stepIndex + 1];
+    const def = activityDef(nextStep.type);
+
+    const panel = el('div', { class: 'hx-current hx-transition' });
+    panel.appendChild(el('div', { class: 'hx-current-top' },
+      el('span', { class: 'hx-current-step-num' }, '⟳ Roxzone'),
+      el('span', { class: 'hx-current-mode' }, `Next: station ${rs.stepIndex + 2} / ${rs.program.steps.length}`)
     ));
-
-    const rail = el('div', { class: 'hx-rail' });
-    prog.steps.forEach((s, i) => {
-      const d = activityDef(s.type);
-      let cls = 'hx-rail-item';
-      let right = '';
-      if (i < rs.stepIndex) { cls += ' done'; right = fmt(rs.records[i].ms); }
-      else if (i === rs.stepIndex) cls += ' active';
-      rail.appendChild(el('div', { class: cls },
-        el('span', { class: 'hx-rail-name' }, `${i + 1}. ${d.icon} ${d.name}`),
-        el('span', { class: 'hx-rail-time' }, right)));
-    });
-    wrap.appendChild(el('div', { class: 'hx-rail-wrap' }, el('div', { class: 'hx-rail-title' }, 'Program'), rail));
-
-    return wrap;
+    panel.appendChild(el('div', { class: 'hx-current-name' },
+      `➡️ Go to station ${def.icon} ${def.name}`));
+    panel.appendChild(el('div', { class: 'hx-timer-step', id: 'hx-transtime' }, fmt(rs.transitionMs, true)));
+    panel.appendChild(el('button', { class: 'hx-btn big', onclick: () => this.startNextStation() }, `▶ Start ${def.name}`));
+    return panel;
   }
 
   /* ------------------------------ Summary ------------------------------ */

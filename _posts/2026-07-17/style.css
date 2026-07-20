@@ -296,6 +296,10 @@
   margin: 0.5rem 0;
 }
 #hyrox-app .hx-current-athletes { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
+
+/* Transition (roxzone) panel */
+#hyrox-app .hx-transition { border-style: dashed; }
+#hyrox-app .hx-transition .hx-timer-step { color: var(--hx-muted); }
 #hyrox-app .hx-next { margin-top: 0.85rem; color: var(--hx-muted); font-size: 0.95rem; font-weight: 600; }
 
 /* Sequence athletes */
@@ -355,6 +359,7 @@
 #hyrox-app .hx-bd-row:last-child { border-bottom: none; }
 #hyrox-app .hx-bd-name { font-weight: 600; }
 #hyrox-app .hx-bd-time { font-family: var(--mono-font, monospace); font-variant-numeric: tabular-nums; }
+#hyrox-app .hx-bd-trans .hx-bd-name, #hyrox-app .hx-bd-trans .hx-bd-time { color: var(--hx-muted); font-size: 0.85rem; }
 #hyrox-app .hx-bd-splits { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0 0 0.5rem 1rem; }
 #hyrox-app .hx-bd-split { font-size: 0.8rem; color: var(--hx-muted); background: var(--hx-bg); border: 1px solid var(--hx-border); border-radius: 999px; padding: 0.1rem 0.55rem; }
 
